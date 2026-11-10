@@ -17,12 +17,15 @@ jobs:
       - name: Configura o interpretador Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.11'
+
+      - name: Instala dependências de sistema do PyGraphviz
+        run: sudo apt-get update && sudo apt-get install -y libgraphviz-dev
 
       - name: Instala bibliotecas Python
         run: |
           python -m pip install --upgrade pip
-          pip install --requirement requirements-dev.txt
+          pip install --requirement requirements.txt
 
       - name: Constrói páginas HTML com MKDocs
         run: mkdocs build

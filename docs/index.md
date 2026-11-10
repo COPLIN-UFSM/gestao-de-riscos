@@ -2,7 +2,7 @@
 
 ## Gestão de Risco UFSM
 
-O **Gestão de Risco UFSM** é um sistema web para cadastro, acompanhamento e monitoramento de riscos institucionais da Universidade Federal de Santa Maria. A solução foi construída com **Django** no backend, **React/Vite** no frontend e **PostgreSQL** como banco de dados, com apoio do Docker para execução local.
+O **Gestão de Risco UFSM** é um sistema web para cadastro, acompanhamento e monitoramento de riscos institucionais da Universidade Federal de Santa Maria. A solução foi construída com **Django** no backend, **React/Vite** no frontend, SQLite em desenvolvimento/testes e DB2 em produção.
 
 ## Objetivo da documentação
 
@@ -33,8 +33,8 @@ As páginas do MkDocs foram organizadas para facilitar a navegação entre área
 
 - **Backend**: Django 5, Django REST Framework e autenticação por token;
 - **Frontend**: React 18, React Router DOM, Axios e Vite;
-- **Banco de dados**: PostgreSQL 16;
-- **Infraestrutura local**: Docker e Docker Compose;
+- **Banco de dados**: SQLite local e DB2 em produção;
+- **Infraestrutura de produção**: Docker e Docker Compose;
 - **Sistemas suportados para execução local**: Windows 11 e Ubuntu/Linux;
 - **Testes**: Pytest, Pytest-Django e Pytest-Cov;
 - **Qualidade de código**: Ruff (formatação e lint) e Pylint (análise estática).

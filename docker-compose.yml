@@ -1,14 +1,11 @@
 services:
-  db:
-    image: postgres:16-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  web:
+    build: .
+    container_name: gestao-de-riscos
+    env_file:
+      - .env
     environment:
-      - POSTGRES_DB=gestao_risco_ufsm
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      DJANGO_SETTINGS_MODULE: src.gestao_risco.settings.production
     ports:
-      - "5433:5432"
-
-volumes:
-  postgres_data:
+      - "8005:8000"
+    restart: unless-stopped

@@ -1,180 +1,136 @@
-# Instruções para Rodar o Projeto (Gestão de Risco UFSM)
+# Desenvolvimento local — Gestão de Risco UFSM
 
-Este guia resume a execução do projeto em **Windows 11** e em sistemas **Unix**, como **Ubuntu**.
+Este guia explica como executar o backend e o frontend localmente, sem conectar ao DB2 de produção. Em desenvolvimento,
+o Django usa SQLite persistente; os testes usam um SQLite em memória.
 
 ## 1. Pré-requisitos
 
-- Python 3.11 ou 3.12;
-- Node.js 18 ou superior;
-- Docker com suporte a Compose;
+- Python 3.11;
+- Node.js 18 ou superior e npm;
 - Git.
 
-## 2. Configuração inicial
+Docker não é necessário para desenvolvimento local. O `docker-compose.yml` está configurado para produção e espera
+conectar ao DB2 existente.
 
-Crie o ambiente virtual:
+## 2. Preparar o backend
 
-```bash
-python -m venv .venv
-```
+Execute os comandos na raiz do repositório, onde está o `manage.py`.
 
-Ative o ambiente virtual.
-
-No **Windows 11**:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-No **Ubuntu/Linux**:
+Crie e ative um ambiente virtual.
 
 ```bash
-source .venv/bin/activate
+conda env create -f environment.yml
+conda activate riscos
 ```
-
-Instale as dependências do backend:
-
-```bash
-pip install -r requirements.txt
-pip install "psycopg[binary]"
-```
-
-## 3. Variáveis de ambiente
 
 Crie o `.env` a partir do exemplo.
 
-No **Windows 11**:
+No Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-No **Ubuntu/Linux**:
+No Linux:
 
 ```bash
 cp .env.example .env
 ```
 
-## 4. Banco de dados
+Para desenvolvimento local, não é preciso preencher as variáveis `DB_*`: elas só são usadas pelo perfil de produção. Se
+`SECRET_KEY` estiver vazia, o perfil local usa uma chave de desenvolvimento. Não use essa chave em produção.
 
-Com o Docker em execução, suba o PostgreSQL:
+## 3. Criar e popular o banco local
 
-```bash
-docker compose up -d
-```
-
-## 5. Preparar o Django
+Com o ambiente virtual ativado, na raiz do repositório:
 
 ```bash
-python manage.py makemigrations
 python manage.py migrate
 ```
 
-Opcionalmente, popule o sistema com dados realistas prontos para demonstração:
+O `manage.py` seleciona `src.gestao_risco.settings.development` por padrão. Esse perfil cria/usa o arquivo `dev.sqlite3`
+na raiz. As migrations versionadas criam as tabelas e carregam os dados de referência do PDI e das unidades da UFSM. Não
+é necessário iniciar um container de banco nem executar `makemigrations` para preparar o banco.
+
+Opcionalmente, crie dados fictícios para testar a interface:
 
 ```bash
 python manage.py seed_apresentacao
 ```
 
-Esse comando limpa o banco e cria 1 administrador, 9 gestores e 6 planos de risco cobrindo todas as categorias e níveis de risco.
-
-Acesso do administrador:
+**Atenção:** esse comando apaga os usuários e riscos existentes no banco selecionado antes de inserir os dados de
+demonstração. Use-o somente no banco local. A conta administrativa criada pelo seed é:
 
 ```text
 SIAPE: 202512603
 Senha: 12345678
 ```
 
-Senha padrão dos gestores:
+## 4. Iniciar o backend
 
-```text
-Sigr@2025
-```
-
-Se necessário, também é possível criar um superusuário:
-
-```bash
-python manage.py createsuperuser
-```
-
-## 6. Rodar o backend
+Em um terminal, na raiz do repositório:
 
 ```bash
 python manage.py runserver
 ```
 
-O backend ficará disponível em:
+A API e o painel administrativo ficam disponíveis em `http://localhost:8000/` e `http://localhost:8000/admin/`. Para
+recuperação de senha local, os emails são impressos no terminal do backend.
 
-```text
-http://localhost:8000/
-```
+Se estiver configurando uma IDE, selecione `src.gestao_risco.settings.development` como `DJANGO_SETTINGS_MODULE`.
 
-## 7. Rodar o frontend
+## 5. Iniciar o frontend
 
 Em outro terminal:
 
 ```bash
 cd src/frontend
-npm install
+npm install  # apenas para instalar pacotes, uma vez; depois use `npm ci` para instalar as versões travadas
+npm ci  # apenas para instalar as versões travadas no package-lock.json
 npm run dev
 ```
 
-O frontend ficará disponível em:
+Abra `http://localhost:5173/`. O Vite encaminha automaticamente as chamadas `/api` para o backend em
+`http://localhost:8000/`; mantenha os dois servidores em execução.
 
-```text
-http://localhost:5173/
-```
+## 6. Executar os testes
 
-## 8. Endpoints principais
-
-### Usuários
-
-- **Login**: `POST /api/usuarios/login/`
-- **Registro**: `POST /api/usuarios/registro/`
-- **Unidades/Departamentos**: `GET /api/usuarios/setores/`  
-  A rota continua com o nome `setores` por compatibilidade, mas retorna as unidades reais da UFSM.
-- **Atualizar perfil**: `PATCH /api/usuarios/me/`
-- **Recuperação de senha**: `POST /api/usuarios/recuperar-senha/enviar/`, `validar/` e `redefinir/`
-
-### Gestão de riscos
-
-- **Desafios, objetivos e macroprocessos**: `/api/riscos/desafios/`, `/api/riscos/objetivos/`, `/api/riscos/macroprocessos/`
-- **Planos de risco**: `/api/riscos/planos/` — rotas de detalhe usam `{uuid}` (ex: `/api/riscos/planos/{uuid}/`)
-- **Duplicar plano**: `POST /api/riscos/planos/{uuid}/duplicar/`
-- **Histórico de alterações**: `GET /api/riscos/planos/{uuid}/historico/`
-- **Relatório gerencial**: `GET /api/riscos/planos/exportar-relatorio/`
-- **Ações de tratamento**: `/api/riscos/acoes/` — aceita filtro `?risco=<uuid>`
-- **Monitoramento**: `/api/riscos/monitoramentos/` — aceita filtro `?risco=<uuid>`
-
-## 9. Validação
-
-Para executar os testes automatizados:
+Na raiz do repositório, com as dependências Python instaladas:
 
 ```bash
 python -m pytest
 ```
 
-Para validar o linter do backend:
+O pytest seleciona `src.gestao_risco.settings.test` por meio de `pytest.ini`. Esse perfil usa SQLite em memória, recria
+o banco para os testes e não altera `dev.sqlite3` nem conecta ao DB2.
+
+Outras verificações do backend:
 
 ```bash
+python manage.py check
 python -m ruff check .
 ```
 
-Para validar o linter do frontend:
+## 7. Endpoints principais
 
-```bash
-cd src/frontend
-npm run lint
-```
+### Usuários
 
-Para validar o build do frontend:
+- Login: `POST /api/usuarios/login/`
+- Registro: `POST /api/usuarios/registro/`
+- Unidades/departamentos: `GET /api/usuarios/setores/`
+- Perfil: `PATCH /api/usuarios/me/`
+- Recuperação de senha: `/api/usuarios/recuperar-senha/enviar/`, `/validar/` e `/redefinir/`
 
-```bash
-cd src/frontend
-npm run build
-```
+### Gestão de riscos
 
-Para validar a documentação:
+- Desafios, objetivos e macroprocessos: `/api/riscos/desafios/`, `/api/riscos/objetivos/` e
+  `/api/riscos/macroprocessos/`
+- Planos de risco: `/api/riscos/planos/` (detalhes usam UUID)
+- Histórico: `/api/riscos/planos/{uuid}/historico/`
+- Ações: `/api/riscos/acoes/`
+- Monitoramentos: `/api/riscos/monitoramentos/`
 
-```bash
-python -m mkdocs build
-```
+## 8. Produção
+
+O perfil de produção é `src.gestao_risco.settings.production` e exige credenciais DB2 e configurações próprias no `.env`
+do servidor. Não use o perfil de produção nem execute `docker compose up` para o fluxo local descrito acima.

@@ -1,151 +1,78 @@
 # Instalação
 
-Esta página descreve a instalação do projeto em **Windows 11** e em sistemas **Unix**, como **Ubuntu**.
+Esta página descreve a execução local em **Windows 11** e **Ubuntu/Linux** e a implantação do backend em Docker.
 
 ## Pré-requisitos
 
-Antes de executar o projeto, tenha instalado:
-
-- Python 3.11 ou 3.12;
-- Node.js 18 ou superior;
-- Docker com suporte a Compose;
+- Python 3.11;
+- Node.js 18 ou superior para o frontend;
+- Docker com suporte a Compose para produção;
 - Git.
 
-## 1. Clonar o repositório
+## Desenvolvimento local
 
-```bash
-git clone <url-do-repositorio>
-cd gestao-risco-ufsm-main
-```
-
-## 2. Criar o ambiente virtual
+Crie e ative um ambiente virtual:
 
 ```bash
 python -m venv .venv
 ```
 
-## 3. Ativar o ambiente virtual
-
-No **Windows 11**:
+No Windows:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-No **Ubuntu/Linux**:
+No Linux:
 
 ```bash
 source .venv/bin/activate
 ```
 
-## 4. Instalar dependências do backend
+Instale as dependências:
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 ```
 
-O arquivo `requirements-dev.txt` já inclui todas as dependências de produção (`requirements.txt`) e as ferramentas de desenvolvimento: pytest, pylint, ruff e mkdocs.
+Crie o `.env` com `Copy-Item .env.example .env` no Windows ou `cp .env.example .env` no Linux. O perfil padrão de `manage.py` é `src.gestao_risco.settings.development`: usa SQLite persistente em `dev.sqlite3` e não precisa de servidor de banco.
 
-## 5. Variáveis de ambiente
-
-Crie um arquivo `.env` a partir do modelo.
-
-No **Windows 11**:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-No **Ubuntu/Linux**:
+Prepare o banco e inicie o backend:
 
 ```bash
-cp .env.example .env
-```
-
-Use os valores locais abaixo:
-
-```env
-DATABASE_NAME=gestao_risco_ufsm
-DATABASE_USER=postgres
-DATABASE_PASSWORD=postgres
-DATABASE_HOST=localhost
-DATABASE_PORT=5433
-DEBUG=True
-```
-
-## 6. Banco de dados
-
-Suba o PostgreSQL com Docker Compose:
-
-```bash
-docker compose up -d
-```
-
-Depois, gere e aplique as migrations:
-
-```bash
-python manage.py makemigrations
 python manage.py migrate
+python manage.py runserver
 ```
 
-## 7. Popular dados de apresentação (opcional)
+As migrations versionadas criam as tabelas e carregam dados de referência. Execute `makemigrations` apenas quando modelos forem alterados. Para dados fictícios de demonstração, `python manage.py seed_apresentacao` limpa os dados existentes de usuários e riscos antes de recriá-los; use somente em banco local descartável.
 
-Para limpar o banco e inserir dados realistas prontos para demonstração:
-
-```bash
-python manage.py seed_apresentacao
-```
-
-Isso cria 1 administrador, 9 gestores e 6 planos de risco cobrindo todas as categorias e níveis de risco.
-
-Acesso do administrador:
-
-```text
-SIAPE: 202512603
-Senha: 12345678
-```
-
-Senha padrão dos gestores:
-
-```text
-Sigr@2025
-```
-
-## 8. Frontend
-
-Instale as dependências do frontend:
+Para iniciar o frontend, em outro terminal:
 
 ```bash
 cd src/frontend
 npm install
-cd ../..
-```
-
-## 9. Execução local
-
-Inicie o backend:
-
-```bash
-python manage.py runserver
-```
-
-Inicie o frontend em outro terminal:
-
-```bash
-cd src/frontend
 npm run dev
 ```
 
-## 10. Validação
+## Testes
 
-Execute os testes automatizados:
+O perfil `src.gestao_risco.settings.test`, usado pelo pytest, usa SQLite em memória e não persiste dados:
 
 ```bash
 python -m pytest
 ```
 
-Valide a documentação:
+## Produção com DB2
+
+No servidor, mantenha o `.env` fora do repositório e configure `SECRET_KEY`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` e `DB_SCHEMA`. O perfil `src.gestao_risco.settings.production` exige essas configurações e conecta ao DB2 existente.
+
+O Docker Compose não cria serviço de banco. No diretório do projeto no servidor:
 
 ```bash
-python -m mkdocs build
+docker compose build
+docker compose run --rm web python manage.py migrate --noinput
+docker compose run --rm web python manage.py collectstatic --noinput
+docker compose up -d
 ```
+
+O pipeline de CI executa os testes em container com SQLite em memória. Em pushes para `main`, o job de deploy usa um runner self-hosted; configure a variável de repositório `DEPLOY_PATH` com o caminho do checkout no servidor.

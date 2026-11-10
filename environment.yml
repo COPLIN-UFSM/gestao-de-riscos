@@ -1,0 +1,40 @@
+name: riscos
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11.*
+  - pip
+  - pandas
+  - numpy
+  - tqdm
+  - jinja2
+  - pip:
+      - ibm_db
+      - ibm_db_django
+      - django==5.2.18
+      - djangorestframework==3.18.3
+      - djangorestframework-simplejwt
+      - python-dotenv
+      - django-stubs
+      - django-cors-headers
+      - gunicorn
+      - whitenoise
+      - drf-spectacular
+      - django-extensions
+      - pygraphviz
+      - django-filter
+      - drf-nested-routers
+      - django-simple-history
+      - djangorestframework-stubs
+      - openpyxl
+      - reportlab
+      - pytest
+      - pytest-django
+      - pytest-cov
+      - ruff
+      - pylint
+      - pylint-django
+      - mkdocs-material
+      - pygments
+      - mkdocs

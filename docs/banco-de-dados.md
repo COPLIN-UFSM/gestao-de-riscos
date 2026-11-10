@@ -258,31 +258,19 @@ Utilizando a sintaxe do Dbdiagram.io para representar a estrutura relacional do 
 
 ![Modelo ER](images/model-banco/modelo-er.png)
 
-## Tecnologia utilizada
+## Bancos por ambiente
 
-O sistema utiliza **PostgreSQL 16**, executado localmente por meio do Docker Compose.
+- **Desenvolvimento**: SQLite persistente no arquivo `dev.sqlite3`.
+- **Testes**: SQLite em memória, recriado a cada execução.
+- **Produção**: conexão com o DB2 institucional já existente; o Docker Compose não provisiona um banco.
 
-## Configuração local
+O perfil de produção exige `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` e `DB_SCHEMA`, além de `SECRET_KEY` e `ALLOWED_HOSTS`. Configure também `CORS_ALLOWED_ORIGINS` para as origens autorizadas do frontend. Esses valores devem ser fornecidos pelos administradores do ambiente e mantidos fora do repositório.
 
-O container do banco é definido em `docker-compose.yml` com:
+## Criação e carga de dados
 
-- banco: `gestao_risco_ufsm`;
-- usuário: `postgres`;
-- senha: `postgres`;
-- porta externa: `5433`;
-- porta interna do container: `5432`.
+O Django ORM cria e altera tabelas por meio das migrations versionadas em `src/usuarios/migrations/` e `src/riscos/migrations/`. Para preparar um banco vazio, execute `python manage.py migrate`; não execute `makemigrations` na inicialização/deploy, pois esse comando deve ser usado durante alterações de modelos e as novas migrations devem ser versionadas.
 
-## Conexão usada pelo Django
-
-O backend espera as seguintes variáveis no `.env`:
-
-```env
-DATABASE_NAME=gestao_risco_ufsm
-DATABASE_USER=postgres
-DATABASE_PASSWORD=postgres
-DATABASE_HOST=localhost
-DATABASE_PORT=5433
-```
+As migrations de dados também inserem as referências iniciais: `riscos.0003_seed_pdi_inicial` carrega desafios, objetivos e macroprocessos do PDI; `usuarios.0005_popular_unidades_oficiais_ufsm` importa as unidades do CSV versionado. O comando `seed_apresentacao` é separado e destrutivo para dados de usuários/riscos, portanto serve somente a bancos locais descartáveis.
 
 ## Estrutura principal
 

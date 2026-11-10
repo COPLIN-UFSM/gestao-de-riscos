@@ -283,10 +283,9 @@ Essa automacao:
 
 - executa em `push`
 - executa em `pull_request`
-- sobe um PostgreSQL para testes
-- instala dependencias
-- aplica migrations
-- executa `pytest`
+- constrói a imagem Docker
+- executa `pytest` no container com SQLite em memória
+- em push para `main`, publica usando runner self-hosted após os testes
 
 ## Observacoes finais
 

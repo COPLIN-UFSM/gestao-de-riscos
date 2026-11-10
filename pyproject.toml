@@ -1,7 +1,7 @@
 [tool.pylint.main]
 load-plugins = ["pylint_django"]
 # Módulo de settings do Django (necessário para pylint-django reconhecer os imports)
-django-settings-module = "src.gestao_risco.settings"
+django-settings-module = "src.gestao_risco.settings.test"
 # Migrations são geradas automaticamente pelo Django — nomes fora do padrão são esperados
 ignore-paths = [
     "src/usuarios/migrations",

@@ -1,59 +1,55 @@
-name: tests.yml
+name: CI/CD
 
 on:
   push:
     branches:
       - main
+      - dev
       - feat/**
       - tests/**
       - refactor/**
   pull_request:
+    branches:
+      - main
+      - dev
 
 jobs:
-  backend-tests:
+  test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: gestao_risco_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d gestao_risco_db"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    env:
-      SECRET_KEY: django-insecure-ci-key
-      DEBUG: False
-      DATABASE_NAME: gestao_risco_db
-      DATABASE_USER: postgres
-      DATABASE_PASSWORD: postgres
-      DATABASE_HOST: 127.0.0.1
-      DATABASE_PORT: 5432
-
     steps:
-      - name: Clona o repositório
+      - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Configura o Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
+      - name: Build Docker image
+        run: docker build -t gestao-de-riscos .
 
-      - name: Instala dependências do projeto
+      - name: Run tests with in-memory SQLite
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+          docker run --rm \
+            -e DJANGO_SETTINGS_MODULE=src.gestao_risco.settings.test \
+            -e SECRET_KEY=ci-test-secret-key \
+            gestao-de-riscos \
+            python -m pytest
 
-      - name: Aplica migrations
-        run: python manage.py migrate
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: self-hosted
 
-      - name: Executa testes automatizados
-        run: python -m pytest --create-db
+    steps:
+      - name: Deploy on production server
+        env:
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          if [ -z "$DEPLOY_PATH" ]; then
+            echo "Configure the DEPLOY_PATH repository variable with the checkout path on the production server."
+            exit 1
+          fi
+
+          cd "$DEPLOY_PATH"
+          git pull --ff-only origin main
+          docker compose build
+          docker compose run --rm web python manage.py migrate --noinput
+          docker compose run --rm web python manage.py collectstatic --noinput
+          docker compose up -d

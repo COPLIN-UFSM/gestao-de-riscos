@@ -2,7 +2,7 @@
 
 # Gestão de Risco UFSM - Mirai Tech
 
-Sistema web para gestão e monitoramento de riscos institucionais da UFSM, com backend em Django REST Framework, frontend em React e banco de dados PostgreSQL executado via Docker.
+Sistema web para gestão e monitoramento de riscos institucionais da UFSM, com backend em Django REST Framework e frontend em React. O desenvolvimento e os testes usam SQLite; a produção conecta-se ao DB2 institucional.
 
 ## Sumário
 
@@ -22,7 +22,7 @@ Para executar o projeto localmente, é necessário ter:
 - Git;
 - acesso à internet para instalar dependências.
 
-O projeto pode ser executado tanto em **Windows 11** quanto em **Ubuntu/Linux**, com backend rodando localmente e PostgreSQL isolado em container.
+O projeto pode ser executado tanto em **Windows 11** quanto em **Ubuntu/Linux**, com backend rodando localmente e banco SQLite em arquivo. O Docker Compose é destinado à aplicação em produção e não cria um container de banco.
 
 | Configuração        | Valor                                     |
 |---------------------|-------------------------------------------|
@@ -66,7 +66,6 @@ source .venv/bin/activate
 
 ```bash
 pip install -r requirements.txt
-pip install "psycopg[binary]"
 ```
 
 ### 5. Criar o arquivo de ambiente
@@ -83,38 +82,25 @@ No **Ubuntu/Linux**:
 cp .env.example .env
 ```
 
-Use os valores abaixo no `.env` para execução local:
+O perfil local usa SQLite e não precisa de configuração de banco; se `SECRET_KEY` ficar vazia, o perfil de desenvolvimento usa uma chave local padrão. O `.env.example` contém campos de conexão DB2, usados somente em produção. Preencha `SECRET_KEY`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS` e `DB_*` com os valores fornecidos pelos administradores antes de implantar.
 
-```env
-DATABASE_NAME=gestao_risco_ufsm
-DATABASE_USER=postgres
-DATABASE_PASSWORD=postgres
-DATABASE_HOST=localhost
-DATABASE_PORT=5433
-DEBUG=True
-```
-
-### 6. Subir o banco de dados
-
-Use preferencialmente:
+### 6. Preparar o banco local
 
 ```bash
-docker compose up -d
-```
-### 7. Aplicar migrations
-
-```bash
-python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 8. Popular dados de apresentação (opcional)
+O comando cria as tabelas a partir das migrations versionadas. As migrations também inserem dados de referência do PDI e das unidades da UFSM. `makemigrations` só deve ser executado ao alterar modelos.
+
+### 7. Popular dados de apresentação (opcional)
 
 ```bash
 python manage.py seed_apresentacao
 ```
 
-Limpa o banco e cria 1 administrador, 9 gestores e 6 planos de risco cobrindo todas as categorias e níveis de risco.
+Esse comando apaga dados de usuários e riscos antes de criar registros de demonstração; use-o apenas em um banco local descartável.
+
+Para produção, configure o `.env` no servidor e execute `docker compose up -d`. O serviço conecta-se ao DB2 externo configurado em `DB_*`; o Compose não cria o banco de dados.
 
 Acesso do administrador:
 
@@ -206,7 +192,7 @@ npm run build
 
 1. O backend ficará disponível em `http://localhost:8000/`.
 2. O frontend ficará disponível em `http://localhost:5173/`.
-3. O banco PostgreSQL subirá pelo Docker em `localhost:5433`.
+3. O backend local usa o arquivo `dev.sqlite3`; testes usam SQLite em memória.
 4. O cadastro de usuários consumirá as unidades/departamentos disponíveis pelo endpoint público `/api/usuarios/setores/`.
 5. As principais rotas de autenticação e gestão de riscos ficarão expostas sob `/api/usuarios/` e `/api/riscos/`.
 
@@ -225,5 +211,6 @@ O repositório foi originalmente desenvolvido por <br>
 * [Documentação Django REST Framework](https://www.django-rest-framework.org/)
 * [Documentação React](https://react.dev/)
 * [Documentação Vite](https://vite.dev/)
-* [Documentação PostgreSQL](https://www.postgresql.org/docs/)
+* [Documentação SQLite](https://www.sqlite.org/docs.html)
+* [Documentação IBM Db2](https://www.ibm.com/docs/en/db2)
 * [Documentação Docker Compose](https://docs.docker.com/compose/)

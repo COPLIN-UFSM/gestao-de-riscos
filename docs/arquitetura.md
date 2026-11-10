@@ -2,13 +2,17 @@
 
 Esta página explica como o projeto **Gestão de Risco UFSM** está organizado e como as partes do sistema conversam entre si. A ideia é servir como um mapa para quem precisa entender, manter ou evoluir a aplicação.
 
+## Organização dos arquivos
+
+O `manage.py` na raiz é uma organização padrão do Django e deve permanecer junto aos arquivos de configuração do repositório. O pacote Django e seus apps ficam em `src/gestao_risco`, `src/usuarios` e `src/riscos`; o frontend React fica em `src/frontend`, enquanto testes e documentação ficam na raiz. Não é necessário mover `manage.py` para `src/`.
+
 ## Visão geral
 
 O sistema usa uma arquitetura web separada em três partes principais:
 
 - **Frontend React/Vite**: interface usada pelos gestores para login, dashboard, planos de risco, mapa de riscos, perfil e gestão de equipe.
 - **Backend Django REST Framework**: API responsável por autenticação, regras de negócio, permissões, exportações, seeds e persistência.
-- **Banco PostgreSQL**: armazena usuários, setores, dados do PDI, riscos, planos de ação, monitoramentos e histórico de alterações.
+- **Banco de dados**: SQLite em desenvolvimento/testes e DB2 institucional em produção; armazena usuários, setores, dados do PDI, riscos, planos de ação, monitoramentos e histórico.
 
 ```mermaid
 flowchart TD
@@ -18,7 +22,7 @@ flowchart TD
     api["API Django REST Framework<br/>/api/"]
     apps["Apps Django<br/>usuarios e riscos"]
     orm["Django ORM"]
-    banco["PostgreSQL"]
+    banco["SQLite / DB2"]
     exportacoes["Exportações<br/>PDF e Excel"]
     seeds["Seeds e comandos<br/>management/commands"]
 
@@ -94,7 +98,7 @@ sequenceDiagram
     participant View as "View / ViewSet"
     participant Serializer as "Serializer"
     participant Model as "Model / ORM"
-    participant DB as "PostgreSQL"
+    participant DB as "SQLite (dev/test) / DB2 (produção)"
 
     UI->>Axios: chama /api/riscos/planos/
     Axios->>URL: envia token no Authorization

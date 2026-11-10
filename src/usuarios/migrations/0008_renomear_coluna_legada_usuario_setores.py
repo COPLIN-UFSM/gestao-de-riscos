@@ -1,38 +1,54 @@
 from django.db import migrations
 
 
-def renomear_coluna_legada_usuario_setores(apps, schema_editor):
+def obter_colunas_usuario_setores(schema_editor):
     with schema_editor.connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_name = 'usuario_setores'
-            """
+        tabela = next(
+            (
+                nome
+                for nome in schema_editor.connection.introspection.table_names(cursor)
+                if nome.lower() == "usuario_setores"
+            ),
+            None,
         )
-        colunas = {row[0] for row in cursor.fetchall()}
+        if tabela is None:
+            return None, {}
 
-        if "unidadeorganizacional_id" in colunas and "setor_id" not in colunas:
-            cursor.execute(
-                'ALTER TABLE "usuario_setores" RENAME COLUMN "unidadeorganizacional_id" TO "setor_id"'
+        colunas = {
+            coluna.name.lower(): coluna.name
+            for coluna in schema_editor.connection.introspection.get_table_description(
+                cursor, tabela
             )
+        }
+    return tabela, colunas
+
+
+def renomear_coluna_legada_usuario_setores(apps, schema_editor):
+    tabela, colunas = obter_colunas_usuario_setores(schema_editor)
+    if tabela is None:
+        return
+
+    coluna_antiga = colunas.get("unidadeorganizacional_id")
+    if coluna_antiga and "setor_id" not in colunas:
+        schema_editor.execute(
+            f"ALTER TABLE {schema_editor.quote_name(tabela)} "
+            f"RENAME COLUMN {schema_editor.quote_name(coluna_antiga)} "
+            f"TO {schema_editor.quote_name('setor_id')}"
+        )
 
 
 def desfazer_renomeacao_coluna_legada_usuario_setores(apps, schema_editor):
-    with schema_editor.connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_name = 'usuario_setores'
-            """
-        )
-        colunas = {row[0] for row in cursor.fetchall()}
+    tabela, colunas = obter_colunas_usuario_setores(schema_editor)
+    if tabela is None:
+        return
 
-        if "setor_id" in colunas and "unidadeorganizacional_id" not in colunas:
-            cursor.execute(
-                'ALTER TABLE "usuario_setores" RENAME COLUMN "setor_id" TO "unidadeorganizacional_id"'
-            )
+    coluna_antiga = colunas.get("setor_id")
+    if coluna_antiga and "unidadeorganizacional_id" not in colunas:
+        schema_editor.execute(
+            f"ALTER TABLE {schema_editor.quote_name(tabela)} "
+            f"RENAME COLUMN {schema_editor.quote_name(coluna_antiga)} "
+            f"TO {schema_editor.quote_name('unidadeorganizacional_id')}"
+        )
 
 
 class Migration(migrations.Migration):
