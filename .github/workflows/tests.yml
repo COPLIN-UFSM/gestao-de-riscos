@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Deploy on production server
         env:
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           if [ -z "$DEPLOY_PATH" ]; then
             echo "Configure the DEPLOY_PATH repository variable with the checkout path on the production server."
