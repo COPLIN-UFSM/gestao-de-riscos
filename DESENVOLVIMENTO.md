@@ -1,4 +1,4 @@
-# Desenvolvimento local — Gestão de Risco UFSM
+# Desenvolvimento
 
 Este guia explica como executar o backend e o frontend localmente, sem conectar ao DB2 de produção. Em desenvolvimento,
 o Django usa SQLite persistente; os testes usam um SQLite em memória.
