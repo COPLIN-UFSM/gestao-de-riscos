@@ -5,10 +5,9 @@ from django.db import migrations, models
 
 def popular_uuids_risco(apps, schema_editor):
     Risco = apps.get_model('riscos', 'Risco')
-    for risco in Risco.objects.all():
+    for risco in Risco.objects.filter(uuid__isnull=True):
         risco.uuid = uuid.uuid4()
         risco.save(update_fields=['uuid'])
-
 
 class Migration(migrations.Migration):
 

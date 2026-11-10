@@ -85,6 +85,8 @@ OBJETIVOS_PDI = [
 
 
 def criar_dados_pdi_iniciais(apps, schema_editor):
+    if schema_editor.connection.vendor == "DB2":
+        return
     DesafioPDI = apps.get_model("riscos", "DesafioPDI")
     Macroprocesso = apps.get_model("riscos", "Macroprocesso")
     ObjetivoPDI = apps.get_model("riscos", "ObjetivoPDI")
@@ -123,6 +125,8 @@ def criar_dados_pdi_iniciais(apps, schema_editor):
 
 
 def remover_dados_pdi_iniciais(apps, schema_editor):
+    if schema_editor.connection.vendor == "DB2":
+        return
     DesafioPDI = apps.get_model("riscos", "DesafioPDI")
     Macroprocesso = apps.get_model("riscos", "Macroprocesso")
     ObjetivoPDI = apps.get_model("riscos", "ObjetivoPDI")

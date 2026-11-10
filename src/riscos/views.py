@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import date
 
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q, Subquery
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -89,8 +89,10 @@ class RiscoViewSet(viewsets.ModelViewSet):
 
         if setor_id:
             queryset = queryset.filter(setor_id=setor_id)
+
         if categoria:
             queryset = queryset.filter(categoria=categoria)
+
         if search:
             queryset = queryset.filter(
                 Q(evento__icontains=search) |
@@ -99,24 +101,58 @@ class RiscoViewSet(viewsets.ModelViewSet):
                 Q(macroprocesso__nome__icontains=search) |
                 Q(objetivo__descricao__icontains=search) |
                 Q(objetivo__codigo__icontains=search) |
-                Q(planos_acao__responsavel__icontains=search)
+                Q(
+                    pk__in=PlanoAcao.all_objects.filter(
+                        responsavel__icontains=search
+                    ).values("risco_id")
+                )
             )
+
         if data_inicio:
-            queryset = queryset.filter(planos_acao__data_inicio__gte=data_inicio)
+            planos_inicio = PlanoAcao.all_objects.filter(
+                risco_id=OuterRef("pk"),
+                data_inicio__gte=data_inicio
+            )
+            queryset = queryset.filter(Exists(planos_inicio))
+
         if data_fim:
-            queryset = queryset.filter(planos_acao__data_fim__lte=data_fim)
+            planos_fim = PlanoAcao.all_objects.filter(
+                risco_id=OuterRef("pk"),
+                data_fim__lte=data_fim
+            )
+            queryset = queryset.filter(Exists(planos_fim))
 
         ordenacao_map = {
             'asc': 'id',
             'desc': '-id',
             'nivel_desc': '-nivel_residual',
             'nivel_asc': 'nivel_residual',
-            'prazo_asc': 'planos_acao__data_fim',
-            'prazo_desc': '-planos_acao__data_fim',
         }
-        queryset = queryset.order_by(ordenacao_map.get(ordenacao, '-id'))
 
-        return queryset.distinct()
+        if ordenacao == 'prazo_asc':
+            prazo = PlanoAcao.all_objects.filter(
+                risco_id=OuterRef("pk")
+            ).order_by("data_fim").values("data_fim")[:1]
+
+            queryset = queryset.annotate(
+                _prazo_ordenacao=Subquery(prazo)
+            ).order_by("_prazo_ordenacao")
+
+        elif ordenacao == 'prazo_desc':
+            prazo = PlanoAcao.all_objects.filter(
+                risco_id=OuterRef("pk")
+            ).order_by("-data_fim").values("data_fim")[:1]
+
+            queryset = queryset.annotate(
+                _prazo_ordenacao=Subquery(prazo)
+            ).order_by("-_prazo_ordenacao")
+
+        else:
+            queryset = queryset.order_by(
+                ordenacao_map.get(ordenacao, '-id')
+            )
+
+        return queryset
 
     def _normalize_status(self, status_label):
         normalized = (status_label or "").lower()

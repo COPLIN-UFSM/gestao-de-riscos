@@ -41,7 +41,7 @@ def infra_risco(setor_oficial, setor_secundario, usuario_gestor, usuario_outro_s
 @pytest.mark.django_db
 class TestRiscoViewsPermissions:
     def test_calculo_niveis_no_save(self, infra_risco):
-        # a criacao do fixture ja deve ter calculado os niveis automaticamente
+        # a criacao do fixture já deve ter calculado os niveis automaticamente
         risco = infra_risco['risco']
         assert risco.nivel_risco == 9
         assert risco.nivel_residual == 1
@@ -102,13 +102,13 @@ class TestRiscoViewsPermissions:
             method = "PUT"
             user = infra_risco['u1']  # u1 pertence a s1
 
-        # gestor de outro setor nao pode editar objeto vinculado ao risco de s1
+        # gestor de outro setor não pode editar objeto vinculado ao risco de s1
         assert perm.has_object_permission(RequestU2(), None, ObjComRisco()) is False
         # gestor do proprio setor pode editar
         assert perm.has_object_permission(RequestU1(), None, ObjComRisco()) is True
 
     def test_permissao_objeto_invalido(self, infra_risco):
-        # este teste cobre um objeto que nao corresponde ao esperado pela permissao
+        # este teste cobre um objeto que não corresponde ao esperado pela permissao
         from src.riscos.views import PertenceAoSetorDoRisco
         perm = PertenceAoSetorDoRisco()
 
@@ -153,7 +153,7 @@ class TestRiscoViewsPermissions:
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 1
 
-        # na segunda chamada o termo nao existe e a lista deve vir vazia
+        # na segunda chamada o termo não existe e a lista deve vir vazia
         url = "/api/riscos/planos/?search=Inexistente"
         response = api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
@@ -192,7 +192,7 @@ class TestRiscoViewsPermissions:
         assert "Z Macroprocesso" in nomes
 
     def test_exporta_lista_filtrada_para_excel(self, api_client, infra_risco):
-        # este endpoint deve gerar um arquivo excel para a listagem filtrada
+        # este endpoint deve gerar um arquivo Excel para a listagem filtrada
         api_client.force_authenticate(user=infra_risco["u1"])
 
         response = api_client.get(f"/api/riscos/planos/exportar-excel/?setor={infra_risco['s1'].id}")
@@ -203,7 +203,7 @@ class TestRiscoViewsPermissions:
         assert response.content.startswith(b"PK")
 
     def test_exporta_plano_individual_para_excel(self, api_client, infra_risco):
-        # aqui a exportacao e de um plano especifico
+        # aqui a exportacao e de um plano específico
         api_client.force_authenticate(user=infra_risco["u1"])
 
         response = api_client.get(f"/api/riscos/planos/{infra_risco['risco'].uuid}/exportar-excel/")
@@ -214,7 +214,7 @@ class TestRiscoViewsPermissions:
         assert response.content.startswith(b"PK")
 
     def test_exporta_plano_individual_para_pdf(self, api_client, infra_risco):
-        # primeiro cria um plano de acao para enriquecer o pdf exportado
+        # primeiro cria um plano de ação para enriquecer o pdf exportado
         api_client.force_authenticate(user=infra_risco["u1"])
         PlanoAcao.objects.create(
             risco=infra_risco["risco"],
@@ -267,7 +267,7 @@ class TestSoftDeleteEndpoints:
         assert str(risco.uuid) in uuids
 
     def test_dashboard_respeita_filtros_de_setor_e_data(self, api_client, infra_risco):
-        # este cenario cria uma acao dentro do periodo filtrado
+        # este cenario cria uma ação dentro do período filtrado
         api_client.force_authenticate(user=infra_risco["u1"])
         PlanoAcao.objects.create(
             risco=infra_risco["risco"],
@@ -302,7 +302,7 @@ class TestSoftDeleteEndpoints:
         assert "riscos_por_nivel" in response.data
 
     def test_dashboard_retorna_vazio_quando_periodo_nao_contem_acoes(self, api_client, infra_risco):
-        # aqui a acao e criada fora do periodo para validar retorno vazio
+        # aqui a ação e criada fora do período para validar retorno vazio
         api_client.force_authenticate(user=infra_risco["u1"])
         PlanoAcao.objects.create(
             risco=infra_risco["risco"],
@@ -382,7 +382,7 @@ class TestPlanoAcaoAutoProgresso:
         assert acao.progresso == 100
 
     def test_progresso_nao_alterado_em_outros_status(self, api_client, infra_risco):
-        # status diferente de Concluída nao deve forcar o progresso a 100
+        # status diferente de Concluída não deve forcar o progresso a 100
         api_client.force_authenticate(user=infra_risco["u1"])
         acao = PlanoAcao.objects.create(
             risco=infra_risco["risco"],
@@ -409,7 +409,7 @@ class TestPlanoAcaoAutoProgresso:
 @pytest.mark.django_db
 class TestDuplicarRisco:
     def test_duplicar_cria_novo_risco_sem_plano_acao(self, api_client, infra_risco):
-        # a duplicacao deve criar um risco novo com os mesmos dados mas sem acao vinculada
+        # a duplicacao deve criar um risco novo com os mesmos dados, mas sem ação vinculada
         risco = infra_risco["risco"]
         PlanoAcao.objects.create(
             risco=risco,
@@ -446,7 +446,7 @@ class TestDuplicarRisco:
         assert HistoricoPlano.objects.filter(risco=novo).exists()
 
     def test_outro_setor_nao_pode_duplicar(self, api_client, infra_risco):
-        # usuario de setor diferente nao tem permissao de duplicar (acao de escrita)
+        # usuario de setor diferente não tem permissao de duplicar (ação de escrita)
         api_client.force_authenticate(user=infra_risco["u2"])
 
         response = api_client.post(f"/api/riscos/planos/{infra_risco['risco'].uuid}/duplicar/")
@@ -599,7 +599,7 @@ class TestBuscaExpandidaEOrdenacao:
         assert len(response.data["results"]) == 1
 
     def test_busca_por_responsavel_da_acao(self, api_client, infra_risco):
-        # a busca expandida deve localizar riscos pelo responsavel do plano de acao
+        # a busca expandida deve localizar riscos pelo responsavel do plano de ação
         risco = infra_risco["risco"]
         PlanoAcao.objects.create(
             risco=risco,
