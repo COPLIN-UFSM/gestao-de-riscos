@@ -15,6 +15,9 @@ SETORES_INICIAIS = [
 
 
 def criar_setores_iniciais(apps, schema_editor):
+    if schema_editor.connection.vendor == "DB2":
+        return
+
     Setor = apps.get_model("usuarios", "Setor")
 
     for sigla in SETORES_INICIAIS:
@@ -25,6 +28,9 @@ def criar_setores_iniciais(apps, schema_editor):
 
 
 def remover_setores_iniciais(apps, schema_editor):
+    if schema_editor.connection.vendor == "DB2":
+        return
+
     Setor = apps.get_model("usuarios", "Setor")
     Setor.objects.filter(sigla__in=SETORES_INICIAIS, nome__in=SETORES_INICIAIS).delete()
 

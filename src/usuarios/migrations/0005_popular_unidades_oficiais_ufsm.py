@@ -5,6 +5,9 @@ from django.db import migrations
 
 
 def popular_unidades_oficiais(apps, schema_editor):
+    if schema_editor.connection.vendor == "DB2":
+        return
+
     Setor = apps.get_model("usuarios", "Setor")
     caminho_csv = Path(__file__).resolve().parents[1] / "data" / "unidades_ufsm.csv"
 
@@ -63,6 +66,9 @@ def popular_unidades_oficiais(apps, schema_editor):
 
 
 def reverter_unidades_oficiais(apps, schema_editor):
+    if schema_editor.connection.vendor == "DB2":
+        return
+
     Setor = apps.get_model("usuarios", "Setor")
     Setor.objects.filter(fonte_oficial=True).delete()
     Setor.objects.filter(tipo_unidade="Legado").update(ativo=True)

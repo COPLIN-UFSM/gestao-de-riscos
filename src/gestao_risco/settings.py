@@ -65,14 +65,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'src.gestao_risco.wsgi.application'
 
 DATABASES = {
+    # Banco de destino: IBM Db2
     'default': {
+        'ENGINE': 'db2_custom_backend',
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        'HOST': os.environ.get('DATABASE_HOST'),
+        'PORT': os.environ.get('DATABASE_PORT'),
+        'CURRENTSCHEMA': 'COPROC',
+    },
+
+    # Banco de origem: PostgreSQL local
+    'source': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME', 'gestao_risco_ufsm'),
-        'USER': os.environ.get('DATABASE_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'postgres'),
-        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
-        'PORT': os.environ.get('DATABASE_PORT', '5432'),
-    }
+        'NAME': os.environ.get('SOURCE_DATABASE_NAME'),
+        'USER': os.environ.get('SOURCE_DATABASE_USER'),
+        'PASSWORD': os.environ.get('SOURCE_DATABASE_PASSWORD'),
+        'HOST': os.environ.get('SOURCE_DATABASE_HOST', 'localhost'),
+        'PORT': os.environ.get('SOURCE_DATABASE_PORT', '5434'),
+    },
 }
 
 # Configuração do Django REST Framework

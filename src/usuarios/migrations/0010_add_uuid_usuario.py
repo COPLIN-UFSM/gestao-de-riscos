@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 def popular_uuids_usuario(apps, schema_editor):
     Usuario = apps.get_model('usuarios', 'Usuario')
-    for usuario in Usuario.objects.all():
+    for usuario in Usuario.objects.filter(uuid__isnull=True):
         usuario.uuid = uuid.uuid4()
         usuario.save(update_fields=['uuid'])
 
