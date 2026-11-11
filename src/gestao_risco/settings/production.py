@@ -61,6 +61,10 @@ STATIC_URL = (
     else "/static/"
 )
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://proplan.ufsm.br",
+]
+
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
@@ -79,22 +83,26 @@ USE_TZ = False
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-    },
     "formatters": {
         "verbose": {
             "format": "{asctime} {levelname} {name}: {message}",
             "style": "{",
         },
     },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
     "loggers": {
-        "django.request": {
+        "django": {
             "handlers": ["console"],
-            "level": "ERROR",
+            "level": "INFO",
             "propagate": False,
         },
     },
