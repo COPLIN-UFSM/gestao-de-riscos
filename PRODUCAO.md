@@ -4,12 +4,10 @@ Esse arquivo explica como colocar a aplicação em produção, na primeira vez q
 
 ## Uma vez por servidor
 
-Crie um action runner e execute-o no servidor de produção. Instruções na documentação do GitHub
+No servidor de produção, crie um action runner e execute-o. Instruções na documentação do GitHub
 Actions: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners
 
-Instale Docker Engine com o plugin Docker Compose e Nginx. Libere no firewall somente as portas
-80 e 443 para acesso externo; as portas 8005 (API) e 3000 (frontend) ficam restritas ao próprio
-servidor.
+O servidor de produção também deve estar rodando um Docker Engine.
 
 ## Uma vez por repositório/aplicação
 
@@ -22,62 +20,76 @@ cp .env.example .env
 chmod 600 .env
 ```
 
-Preencha `.env` com as credenciais DB2 e demais valores de produção. Use uma chave `SECRET_KEY`
-forte e configure `ALLOWED_HOSTS` com o domínio público, sem protocolo ou caminho, por exemplo:
+Preencha `.env` com as credenciais DB2 e demais valores de produção. O arquivo `.env.example` possui os campos que
+precisam ser preenchidos.
+
+Use uma chave `SECRET_KEY` forte (comprida) e configure `ALLOWED_HOSTS` com o domínio público do servidor, por exemplo:
 
 ```dotenv
-ALLOWED_HOSTS=app.exemplo.ufsm.br
+ALLOWED_HOSTS=proplan.ufsm.br
 ```
 
-Configure o DNS do domínio para apontar para o servidor. O `docker compose` sobe o backend Django
-em `127.0.0.1:8005` e o frontend React em `127.0.0.1:3000`; o Nginx, instalado no host, encaminha
-as requisições para esses serviços.
+O `docker compose` sobe o backend Django em `127.0.0.1:8005` e o frontend React em `127.0.0.1:3000`. A aplicação fica
+publicada sob o caminho `/gestao-de-riscos`; o Nginx, instalado no host, encaminha as requisições para esses serviços.
 
-Crie `/etc/nginx/sites-available/gestao-de-riscos` com o conteúdo abaixo, substituindo
-`app.exemplo.ufsm.br` pelo domínio real:
+### Nginx
+
+No bloco `server` HTTPS já existente para `proplan.ufsm.br`, adicione as seguintes `location`. Não crie outro bloco
+para o mesmo domínio; assim, o restante do site continua sendo servido normalmente.
 
 ```nginx
-server {
-    listen 80;
-    listen [::]:80;
-    server_name app.exemplo.ufsm.br;
+location = /gestao-de-riscos {
+    return 301 /gestao-de-riscos/;
+}
 
+location ^~ /gestao-de-riscos/api/ {
+    proxy_pass http://127.0.0.1:8005/api/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
+}
 
-    location /api/ {
-        proxy_pass http://127.0.0.1:8005;
-    }
+location ^~ /gestao-de-riscos/admin/ {
+    proxy_pass http://127.0.0.1:8005/admin/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
 
-    location /admin/ {
-        proxy_pass http://127.0.0.1:8005;
-    }
+location ^~ /gestao-de-riscos/static/ {
+    proxy_pass http://127.0.0.1:8005/static/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
 
-    location /static/ {
-        proxy_pass http://127.0.0.1:8005;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-    }
+location ^~ /gestao-de-riscos/ {
+    proxy_pass http://127.0.0.1:3000/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
 
-Habilite e valide o site:
+O caminho `/gestao-de-riscos/` serve o frontend; a API, o admin do Django e os arquivos estáticos também ficam sob esse
+prefixo. O Nginx remove o prefixo ao encaminhar as requisições, e `FORCE_SCRIPT_NAME` faz o Django gerar URLs com ele.
+As demais rotas do domínio continuam disponíveis para o ProPlan.
+
+Valide e recarregue o Nginx:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/gestao-de-riscos /etc/nginx/sites-enabled/gestao-de-riscos
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-Com o DNS já apontado para o servidor, configure HTTPS com Certbot (o plugin ajusta o site do
-Nginx para usar o certificado e redirecionar HTTP para HTTPS):
+Se o domínio ainda não tiver HTTPS configurado, configure um certificado antes de testar a URL:
 
 ```bash
-sudo certbot --nginx -d app.exemplo.ufsm.br
+sudo certbot --nginx -d proplan.ufsm.br
 sudo certbot renew --dry-run
 ```
 

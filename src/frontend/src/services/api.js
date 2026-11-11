@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${import.meta.env.BASE_URL}api`,
 });
 
 const PUBLIC_ENDPOINTS = [
@@ -44,8 +44,9 @@ api.interceptors.response.use(
       localStorage.removeItem('@SIGR:token');
       localStorage.removeItem('@SIGR:user');
 
-      if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login';
+      const loginPath = `${import.meta.env.BASE_URL}login`;
+      if (!window.location.pathname.startsWith(loginPath)) {
+        window.location.href = loginPath;
       }
     }
 

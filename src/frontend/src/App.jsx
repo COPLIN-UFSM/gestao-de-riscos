@@ -28,7 +28,7 @@ function App() {
     <ThemeProvider>
       <FeedbackProvider>
         <AuthProvider>
-          <Router>
+          <Router basename={import.meta.env.BASE_URL}>
             <FeedbackToast />
             <Routes>
               {/* Rotas públicas */}

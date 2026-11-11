@@ -6,6 +6,7 @@ services:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: src.gestao_risco.settings.production
+      FORCE_SCRIPT_NAME: /gestao-de-riscos
     volumes:
       - staticfiles:/home/staticfiles
     ports:
@@ -13,7 +14,10 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./src/frontend
+    build:
+      context: ./src/frontend
+      args:
+        VITE_BASE_PATH: /gestao-de-riscos/
     container_name: gestao-de-riscos-frontend
     ports:
       - "127.0.0.1:3000:3000"

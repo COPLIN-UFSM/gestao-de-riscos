@@ -53,6 +53,13 @@ ALLOWED_HOSTS = [
 if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("Set ALLOWED_HOSTS to the production host names.")
 
+FORCE_SCRIPT_NAME = os.environ.get("FORCE_SCRIPT_NAME") or None
+STATIC_URL = (
+    f"{FORCE_SCRIPT_NAME.rstrip('/')}/static/"
+    if FORCE_SCRIPT_NAME
+    else "/static/"
+)
+
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
