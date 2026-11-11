@@ -6,6 +6,7 @@ ARG VITE_BASE_PATH=/
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
 
 COPY package*.json ./
+RUN npm install
 RUN npm ci
 
 COPY . .
