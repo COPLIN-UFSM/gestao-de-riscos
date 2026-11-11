@@ -6,6 +6,18 @@ services:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: src.gestao_risco.settings.production
+    volumes:
+      - staticfiles:/home/staticfiles
     ports:
-      - "8005:8000"
+      - "127.0.0.1:8005:8000"
     restart: unless-stopped
+
+  frontend:
+    build: ./src/frontend
+    container_name: gestao-de-riscos-frontend
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+
+volumes:
+  staticfiles:
