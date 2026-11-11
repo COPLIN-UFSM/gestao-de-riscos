@@ -23,4 +23,4 @@ ENV DJANGO_SETTINGS_MODULE=src.gestao_risco.settings.production
 
 EXPOSE 8000
 
-CMD ["gunicorn", "src.gestao_risco.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "src.gestao_risco.wsgi:application", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "--capture-output", "--log-level", "info"]
