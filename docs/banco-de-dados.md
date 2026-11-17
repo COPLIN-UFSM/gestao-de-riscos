@@ -270,7 +270,7 @@ O perfil de produção exige `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`,
 
 O Django ORM cria e altera tabelas por meio das migrations versionadas em `src/usuarios/migrations/` e `src/riscos/migrations/`. Para preparar um banco vazio, execute `python manage.py migrate`; não execute `makemigrations` na inicialização/deploy, pois esse comando deve ser usado durante alterações de modelos e as novas migrations devem ser versionadas.
 
-As migrations de dados também inserem as referências iniciais: `riscos.0003_seed_pdi_inicial` carrega desafios, objetivos e macroprocessos do PDI; `usuarios.0005_popular_unidades_oficiais_ufsm` importa as unidades do CSV versionado. O comando `seed_apresentacao` é separado e destrutivo para dados de usuários/riscos, portanto serve somente a bancos locais descartáveis.
+As migrations de dados também inserem as referências iniciais: `riscos.0003_seed_pdi_inicial` carrega desafios, objetivos e macroprocessos do PDI; `usuarios.0005_popular_unidades_oficiais_ufsm` importa as unidades do CSV versionado. Para importar ou atualizar desafios e objetivos do PDI a partir dos CSVs em `backend/database/`, execute `python manage.py importar_pdi`. Os caminhos podem ser substituídos com `--arquivo-desafios` e `--arquivo-objetivos`; a importação não remove registros ausentes dos arquivos. O comando `seed_apresentacao` é separado e destrutivo para dados de usuários/riscos, portanto serve somente a bancos locais descartáveis.
 
 ## Estrutura principal
 

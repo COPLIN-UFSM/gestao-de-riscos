@@ -59,6 +59,13 @@ python manage.py importar_unidades_ufsm
 Importa as unidades da UFSM do CSV versionado. Esse comando é idempotente: se o banco já tiver unidades, ele atualiza
 os registros existentes e cria os novos.
 
+```bash
+python manage.py importar_pdi
+```
+Importa os desafios, objetivos e macroprocessos do PDI a partir dos CSVs versionados. 
+Esse comando é idempotente: se o banco já tiver registros, ele atualiza os existentes e cria os novos.
+
+
 Opcionalmente, crie dados fictícios para testar a interface:
 
 ```bash
