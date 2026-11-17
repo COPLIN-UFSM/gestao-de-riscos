@@ -200,13 +200,13 @@ const EditarPlano = () => {
       showFeedback({
         type: 'success',
         title: 'Etapa atualizada',
-        message: 'A identificacao e a avaliacao do plano foram atualizadas com sucesso.',
+        message: 'A identificação e a avaliação do plano foram atualizadas com sucesso.',
       });
       setEtapa(3);
     } catch (err) {
       showFeedback({
         type: 'error',
-        title: 'Atualizacao nao concluida',
+        title: 'Atualização não concluída',
         message: getApiErrorMessage(err, 'editar_plano'),
       });
     } finally {
@@ -233,13 +233,13 @@ const EditarPlano = () => {
       showFeedback({
         type: 'success',
         title: 'Plano atualizado',
-        message: 'As alteracoes do plano de risco foram salvas com sucesso. Redirecionando para a listagem.',
+        message: 'As alterações do plano de risco foram salvas com sucesso. Redirecionando para a lista de planos.',
       });
       setTimeout(() => navigate('/planos'), 1200);
     } catch (err) {
       showFeedback({
         type: 'error',
-        title: 'Tratamento nao atualizado',
+        title: 'Tratamento não atualizado',
         message: getApiErrorMessage(err, 'tratamento'),
       });
     } finally {
@@ -257,8 +257,8 @@ const EditarPlano = () => {
         <Sidebar />
         <main className="dashboard-main">
           <div className="feedback-panel">
-            <strong>Carregando edicao do plano</strong>
-            <span>Buscando dados do risco, objetivos e plano de acao vinculado.</span>
+            <strong>Carregando a edição do plano</strong>
+            <span>Buscando os dados do risco, dos objetivos e do plano de ação vinculado.</span>
           </div>
         </main>
       </div>

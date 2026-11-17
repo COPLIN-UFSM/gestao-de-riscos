@@ -39,13 +39,13 @@ const RecuperarSenha = () => {
       setTimer(60);
       showFeedback({
         type: 'success',
-        title: 'Codigo enviado',
-        message: 'Verifique seu e-mail institucional e siga para a validacao do codigo.',
+        title: 'Código enviado',
+        message: 'Verifique seu e-mail institucional e prossiga para a validação do código.',
       });
     } catch (error) {
       showFeedback({
         type: 'error',
-        title: 'Envio nao concluido',
+        title: 'Envio não concluído',
         message: getApiErrorMessage(error, 'recuperar_enviar'),
       });
     } finally {
@@ -60,8 +60,8 @@ const RecuperarSenha = () => {
     if (codigoCompleto.length < 6) {
       showFeedback({
         type: 'warning',
-        title: 'Codigo incompleto',
-        message: 'Insira os 6 digitos do codigo para continuar.',
+        title: 'Código incompleto',
+        message: 'Insira os seis dígitos do código para continuar.',
       });
       return;
     }
@@ -72,13 +72,13 @@ const RecuperarSenha = () => {
       setEtapa(3);
       showFeedback({
         type: 'success',
-        title: 'Codigo validado',
-        message: 'Agora voce ja pode definir sua nova senha.',
+        title: 'Código validado',
+        message: 'Agora você já pode definir sua nova senha.',
       });
     } catch (error) {
       showFeedback({
         type: 'error',
-        title: 'Validacao nao concluida',
+        title: 'Validação não concluída',
         message: getApiErrorMessage(error, 'recuperar_validar'),
       });
     } finally {
@@ -93,7 +93,7 @@ const RecuperarSenha = () => {
       showFeedback({
         type: 'warning',
         title: 'Senha divergente',
-        message: 'A confirmacao precisa ser igual a nova senha para continuar.',
+        message: 'A confirmação deve ser igual à nova senha para continuar.',
       });
       return;
     }
@@ -109,13 +109,13 @@ const RecuperarSenha = () => {
       showFeedback({
         type: 'success',
         title: 'Senha atualizada',
-        message: 'Sua senha foi redefinida com sucesso. Voce sera redirecionado para o login.',
+        message: 'Sua senha foi redefinida com sucesso. Você será redirecionado para a tela de login.',
       });
       setTimeout(() => navigate('/login'), 1200);
     } catch (error) {
       showFeedback({
         type: 'error',
-        title: 'Redefinicao nao concluida',
+        title: 'Redefinição não concluída',
         message: getApiErrorMessage(error, 'recuperar_redefinir'),
       });
     } finally {
@@ -151,13 +151,13 @@ const RecuperarSenha = () => {
       setCodigo(['', '', '', '', '', '']);
       showFeedback({
         type: 'success',
-        title: 'Novo codigo enviado',
-        message: 'Um novo codigo foi encaminhado para o seu e-mail institucional.',
+        title: 'Novo código enviado',
+        message: 'Um novo código foi enviado para o seu e-mail institucional.',
       });
     } catch (error) {
       showFeedback({
         type: 'error',
-        title: 'Reenvio nao concluido',
+        title: 'Reenvio não concluído',
         message: getApiErrorMessage(error, 'recuperar_enviar'),
       });
     } finally {
@@ -174,14 +174,14 @@ const RecuperarSenha = () => {
       <main className={`recuperar-card ${etapa === 3 ? 'redefinir-layout' : ''}`}>
         <div className="recuperar-form-section">
           <header className="recuperar-header">
-            <h1 className="recuperar-title-main">Sistema de Gestao de Riscos</h1>
+            <h1 className="recuperar-title-main">Sistema de Gestão de Riscos</h1>
           </header>
 
           {etapa === 1 && (
             <>
-              <h2 className="recuperar-subtitle-section">Recuperar Acesso</h2>
+              <h2 className="recuperar-subtitle-section">Recuperar acesso</h2>
               <p className="recuperar-description">
-                Insira seu e-mail institucional para receber as instrucoes de recuperacao de senha.
+                Insira seu e-mail institucional para receber as instruções de recuperação de senha.
               </p>
               <form onSubmit={handleEnviarEmail}>
                 <div className="input-group">
@@ -214,9 +214,9 @@ const RecuperarSenha = () => {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#003470" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 11 11 13 15 9"></polyline></svg>
                 </div>
               </div>
-              <h2 className="recuperar-subtitle-section" style={{ textAlign: 'center', marginTop: 0 }}>Verificar Identidade</h2>
+              <h2 className="recuperar-subtitle-section" style={{ textAlign: 'center', marginTop: 0 }}>Verificar identidade</h2>
               <p className="recuperar-description" style={{ textAlign: 'center' }}>
-                Insira o codigo de 6 digitos enviado para o seu e-mail institucional.
+                Insira o código de seis dígitos enviado para o seu e-mail institucional.
               </p>
               <form onSubmit={handleValidarCodigo}>
                 <div className="code-inputs-container">
@@ -238,11 +238,11 @@ const RecuperarSenha = () => {
                 <div className="resend-container">
                   <span className={`resend-link ${timer > 0 ? 'disabled' : ''}`} onClick={handleReenviar}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 19 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                    {timer > 0 ? `Reenviar codigo em 00:${timer.toString().padStart(2, '0')}` : 'Reenviar codigo agora'}
+                    {timer > 0 ? `Reenviar código em 00:${timer.toString().padStart(2, '0')}` : 'Reenviar código agora'}
                   </span>
                 </div>
                 <button type="submit" className="recuperar-button" disabled={loading}>
-                  {loading ? 'Validando...' : <>Validar Codigo <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></>}
+                  {loading ? 'Validando...' : <>Validar código <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></>}
                 </button>
               </form>
             </>
@@ -250,15 +250,15 @@ const RecuperarSenha = () => {
 
           {etapa === 3 && (
             <>
-              <p className="recuperar-title-small" style={{ textAlign: 'left', marginBottom: '8px' }}>SEGURANCA DA CONTA</p>
+              <p className="recuperar-title-small" style={{ textAlign: 'left', marginBottom: '8px' }}>SEGURANÇA DA CONTA</p>
               <h2 className="recuperar-subtitle-section" style={{ marginTop: 0, fontSize: '24px' }}>Escolha sua nova senha</h2>
               <p className="recuperar-description">
-                Para garantir a protecao dos seus dados, crie uma senha forte e unica para o sistema institucional.
+                Para proteger seus dados, crie uma senha forte e única para o sistema institucional.
               </p>
 
               <form onSubmit={handleRedefinirSenha}>
                 <div className="input-group">
-                  <label htmlFor="novaSenha">Nova Senha</label>
+                  <label htmlFor="novaSenha">Nova senha</label>
                   <div className="input-with-icon">
                     <span className="input-icon">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -280,7 +280,7 @@ const RecuperarSenha = () => {
                 </div>
 
                 <div className="input-group">
-                  <label htmlFor="confirmarSenha">Confirmar Nova Senha</label>
+                  <label htmlFor="confirmarSenha">Confirmar nova senha</label>
                   <div className="input-with-icon">
                     <span className="input-icon">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
@@ -311,12 +311,12 @@ const RecuperarSenha = () => {
 
         {etapa === 3 && (
           <div className="recuperar-sidebar-info">
-            <h3 className="sidebar-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Requisitos de Senha</h3>
+            <h3 className="sidebar-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Requisitos de senha</h3>
             <ul className="requirements-list">
-              <li className={novaSenha.length >= 8 ? 'met' : ''}>Minimo de 8 caracteres</li>
-              <li className={/[A-Z]/.test(novaSenha) ? 'met' : ''}>Pelo menos um caractere maiusculo</li>
-              <li className={/[0-9!@#$%^&*]/.test(novaSenha) ? 'met' : ''}>Um numero ou simbolo (@#$...)</li>
-              <li className={novaSenha && novaSenha !== '12345678' ? 'met' : ''}>Diferente das ultimas senhas</li>
+              <li className={novaSenha.length >= 8 ? 'met' : ''}>Mínimo de 8 caracteres</li>
+              <li className={/[A-Z]/.test(novaSenha) ? 'met' : ''}>Pelo menos um caractere maiúsculo</li>
+              <li className={/[0-9!@#$%^&*]/.test(novaSenha) ? 'met' : ''}>Um número ou símbolo (@#$...)</li>
+              <li className={novaSenha && novaSenha !== '12345678' ? 'met' : ''}>Não use a senha padrão (12345678)</li>
             </ul>
 
             <div className="tips-box">
@@ -325,7 +325,7 @@ const RecuperarSenha = () => {
               </div>
               <div>
                 <strong>DICAS</strong>
-                <p>Evite datas de nascimento ou nomes obvios. Use uma senha forte.</p>
+                <p>Evite datas de nascimento ou nomes óbvios. Use uma senha forte.</p>
               </div>
             </div>
           </div>
@@ -333,7 +333,7 @@ const RecuperarSenha = () => {
       </main>
 
       <footer className="recuperar-footer-text">
-        Sistema institucional de gestao de riscos
+        Sistema institucional de gestão de riscos
       </footer>
     </div>
   );

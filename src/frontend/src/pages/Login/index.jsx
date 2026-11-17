@@ -29,7 +29,7 @@ const Login = () => {
       showFeedback({
         type: 'success',
         title: 'Acesso liberado',
-        message: 'Login realizado com sucesso. Voce sera redirecionado para a dashboard.',
+        message: 'Login realizado com sucesso. Você será redirecionado para o dashboard.',
       });
 
       navigate('/dashboard');
@@ -53,7 +53,7 @@ const Login = () => {
       <main className="login-card">
         <header className="login-header">
           <p className="login-title-small">Acesso institucional</p>
-          <h1 className="login-title-large">Sistema de Gestao de Riscos</h1>
+          <h1 className="login-title-large">Sistema de Gestão de Riscos</h1>
         </header>
 
         <form onSubmit={handleLogin}>

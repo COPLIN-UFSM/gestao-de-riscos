@@ -46,7 +46,7 @@ const GestaoEquipe = () => {
       console.error('Erro ao carregar membros:', err);
       showFeedback({
         type: 'error',
-        title: 'Equipe indisponivel',
+        title: 'Equipe indisponível',
         message: getApiErrorMessage(err, 'gestao_equipe'),
       });
     } finally {
@@ -73,7 +73,7 @@ const GestaoEquipe = () => {
     } catch (err) {
       showFeedback({
         type: 'error',
-        title: 'Inclusao nao concluida',
+        title: 'Inclusão não concluída',
         message: getApiErrorMessage(err, 'gestao_equipe'),
       });
     }
@@ -96,7 +96,7 @@ const GestaoEquipe = () => {
     } catch (err) {
       showFeedback({
         type: 'error',
-        title: 'Remocao nao concluida',
+        title: 'Remoção não concluída',
         message: getApiErrorMessage(err, 'gestao_equipe'),
       });
     }
@@ -185,7 +185,7 @@ const GestaoEquipe = () => {
 
           <div className="membros-list-container">
             <div className="list-header-row">
-              <h2>Membros da Unidade: {getSetorLabel(setorSelecionado)}</h2>
+              <h2>Membros da unidade: {getSetorLabel(setorSelecionado)}</h2>
               <div className="search-bar">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"></circle>
@@ -250,7 +250,7 @@ const GestaoEquipe = () => {
               ) : (
                 <div className="feedback-panel table-feedback">
                   <strong>Nenhum membro encontrado</strong>
-                  <span>Essa unidade ainda nao possui membros visiveis para o filtro atual.</span>
+                  <span>Esta unidade ainda não possui membros visíveis com os filtros atuais.</span>
                 </div>
               )}
             </div>

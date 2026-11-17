@@ -69,8 +69,8 @@ const NovoPlano = () => {
         console.error('Erro ao carregar dados auxiliares:', err);
         showFeedback({
           type: 'warning',
-          title: 'Dados auxiliares indisponiveis',
-          message: 'Nao foi possivel carregar desafios, objetivos e macroprocessos agora. Atualize a pagina para tentar novamente.',
+          title: 'Dados auxiliares indisponíveis',
+          message: 'Não foi possível carregar os desafios, objetivos e macroprocessos agora. Atualize a página para tentar novamente.',
         });
       }
     }
@@ -149,14 +149,14 @@ const NovoPlano = () => {
       setRiscoCriadoUuid(response.data.uuid);
       showFeedback({
         type: 'success',
-        title: 'Analise registrada',
-        message: 'A identificacao e a avaliacao do risco foram salvas. Agora voce ja pode definir o tratamento.',
+        title: 'Análise registrada',
+        message: 'A identificação e a avaliação do risco foram salvas. Agora você já pode definir o tratamento.',
       });
       setEtapa(3);
     } catch (err) {
       showFeedback({
         type: 'error',
-        title: 'Nao foi possivel salvar o risco',
+        title: 'Não foi possível salvar o risco',
         message: getApiErrorMessage(err, 'novo_plano'),
       });
     } finally {
@@ -174,14 +174,14 @@ const NovoPlano = () => {
       });
       showFeedback({
         type: 'success',
-        title: 'Plano concluido',
-        message: 'O plano de risco completo foi salvo com sucesso. Voce sera redirecionado para a listagem.',
+        title: 'Plano concluído',
+        message: 'O plano de risco foi salvo com sucesso. Você será redirecionado para a lista de planos.',
       });
       navigate('/planos');
     } catch (err) {
       showFeedback({
         type: 'error',
-        title: 'Tratamento nao concluido',
+        title: 'Tratamento não concluído',
         message: getApiErrorMessage(err, 'tratamento'),
       });
     } finally {

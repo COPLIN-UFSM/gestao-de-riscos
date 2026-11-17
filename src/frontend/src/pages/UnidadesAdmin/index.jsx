@@ -64,7 +64,7 @@ const UnidadesAdmin = () => {
         const message = getApiErrorMessage(err, 'unidades_admin');
         showFeedback({
           type: 'error',
-          title: 'Unidades indisponiveis',
+          title: 'Unidades indisponíveis',
           message,
         });
       } finally {
@@ -161,7 +161,7 @@ const UnidadesAdmin = () => {
             <span>unidades nesta página atual</span>
           </div>
           <div className="unidades-summary-card">
-            <span className="summary-kicker">VISUALIZACAO</span>
+            <span className="summary-kicker">VISUALIZAÇÃO</span>
             <strong>{String(totalResultados).padStart(4, '0')}</strong>
             <span>resultados totais no filtro atual</span>
           </div>
@@ -171,7 +171,7 @@ const UnidadesAdmin = () => {
           <div className="unidades-panel-header">
             <div>
               <h2>Estrutura institucional completa</h2>
-              <p>Visao administrativa das unidades oficiais da UFSM com centro, tipo e exibicao completa.</p>
+              <p>Visão administrativa das unidades oficiais da UFSM, com informações completas sobre o centro e o tipo.</p>
             </div>
             <div className="unidades-search">
               <input
@@ -225,7 +225,7 @@ const UnidadesAdmin = () => {
             {loading ? (
               <div className="feedback-panel">
                 <strong>Carregando unidades oficiais</strong>
-                <span>Buscando a estrutura institucional da UFSM para exibicao administrativa.</span>
+                <span>Buscando a estrutura institucional da UFSM para exibição administrativa.</span>
               </div>
             ) : unidades.length === 0 ? (
               <div className="feedback-panel">
@@ -237,7 +237,7 @@ const UnidadesAdmin = () => {
                 <table className="unidades-table">
                   <thead>
                     <tr>
-                      <th>Exibicao comum</th>
+                      <th>Exibição comum</th>
                       <th>Centro</th>
                       <th>Tipo</th>
                       <th>Acoes</th>
@@ -247,8 +247,8 @@ const UnidadesAdmin = () => {
                     {unidades.map((unidade) => (
                       <tr key={unidade.id}>
                         <td>{unidade.label_curto}</td>
-                        <td>{unidade.nome_centro || 'Nao informado'}</td>
-                        <td>{unidade.tipo_unidade || 'Nao informado'}</td>
+                        <td>{unidade.nome_centro || 'Não informado'}</td>
+                        <td>{unidade.tipo_unidade || 'Não informado'}</td>
                         <td className="acoes-cell-unidade">
                           <button
                             type="button"
@@ -280,7 +280,7 @@ const UnidadesAdmin = () => {
 
                 <div className="unidades-pagination">
                   <span>
-                    Pagina {paginaAtual} de {totalPaginas}
+                    Página {paginaAtual} de {totalPaginas}
                   </span>
                   <div className="unidades-pagination-actions">
                     <button
@@ -295,7 +295,7 @@ const UnidadesAdmin = () => {
                       onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
                       disabled={paginaAtual >= totalPaginas}
                     >
-                      Proxima
+                      Próxima
                     </button>
                   </div>
                 </div>
@@ -309,7 +309,7 @@ const UnidadesAdmin = () => {
         <div className="modal-overlay" onClick={() => setModalEditarAberto(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Editar Unidade</h2>
+              <h2>Editar unidade</h2>
               <button type="button" className="modal-close" onClick={() => setModalEditarAberto(false)}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -323,7 +323,7 @@ const UnidadesAdmin = () => {
 
               <div className="form-grid-modal">
                 <div className="form-group">
-                  <label htmlFor="nome">Nome da Unidade</label>
+                  <label htmlFor="nome">Nome da unidade</label>
                   <input id="nome" type="text" value={formEditar.nome} onChange={handleFormEditarChange} required />
                 </div>
                 <div className="form-group">
@@ -339,7 +339,7 @@ const UnidadesAdmin = () => {
                   <input id="nome_centro" type="text" value={formEditar.nome_centro} onChange={handleFormEditarChange} />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="tipo_unidade">Tipo de Unidade</label>
+                  <label htmlFor="tipo_unidade">Tipo de unidade</label>
                   <input id="tipo_unidade" type="text" value={formEditar.tipo_unidade} onChange={handleFormEditarChange} />
                 </div>
               </div>

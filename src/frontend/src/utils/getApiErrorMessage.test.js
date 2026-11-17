@@ -83,7 +83,7 @@ describe('getApiErrorMessage', () => {
     it('usa mensagem default para contexto desconhecido', () => {
       const err = { response: { status: 422, data: {} } };
       const msg = getApiErrorMessage(err, 'contexto_inexistente');
-      expect(msg).toMatch(/acao/i);
+      expect(msg).toMatch(/ação/i);
     });
   });
 });

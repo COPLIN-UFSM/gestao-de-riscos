@@ -127,7 +127,7 @@ const Sidebar = () => {
 
   if (safeUser.is_superuser) {
     navItems.push({
-      label: 'Gestao de Usuarios',
+      label: 'Gestão de Usuários',
       path: '/usuarios',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -162,7 +162,7 @@ const Sidebar = () => {
         type="button"
         className={`mobile-nav-toggle ${isMobileMenuOpen ? 'open' : ''}`}
         onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-        aria-label={isMobileMenuOpen ? 'Fechar navegacao' : 'Abrir navegacao'}
+        aria-label={isMobileMenuOpen ? 'Fechar navegação' : 'Abrir navegação'}
       >
         {isMobileMenuOpen ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -203,7 +203,7 @@ const Sidebar = () => {
       <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-logo">
           {/* <div className="logo-icon">
-            <img src="/logo.png" alt="Logo Gestao de Riscos" />
+            <img src="/logo.png" alt="Logo Gestão de Riscos" />
           </div> */}
           <div className="logo-text">
             <h2>Gestão de Riscos</h2>

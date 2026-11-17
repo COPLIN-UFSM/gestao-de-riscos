@@ -104,7 +104,7 @@ const MapaRisco = () => {
       console.error('Erro ao carregar riscos para o mapa:', err);
       showFeedback({
         type: 'error',
-        title: 'Mapa indisponivel',
+        title: 'Mapa indisponível',
         message: getApiErrorMessage(err, 'mapa_risco'),
       });
     }
@@ -151,7 +151,7 @@ const MapaRisco = () => {
   );
   const setorSelecionadoLabel = filterSetor
     ? (getSetorLabel(todosSetores.find((s) => s.id === filterSetor) || {}) || 'Unidade selecionada')
-    : 'Todas as Unidades';
+    : 'Todas as unidades';
 
   const getRiskLevelInfo = (score) => {
     if (score >= 20) return { label: 'RE', class: 'cell-extremo' };
@@ -228,7 +228,7 @@ const MapaRisco = () => {
                             className={`mapa-setor-option${filterSetor === '' ? ' selected' : ''}`}
                             onClick={() => { setFilterSetor(''); setSetorDropdownOpen(false); setSetorSearch(''); }}
                           >
-                            Todas as Unidades
+                            Todas as unidades
                           </li>
                           {setoresFiltradosDropdown.map((s) => (
                             <li

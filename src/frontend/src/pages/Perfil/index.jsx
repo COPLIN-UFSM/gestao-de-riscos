@@ -55,8 +55,8 @@ const Perfil = () => {
         console.error('Erro ao carregar dados:', err);
         showFeedback({
           type: 'error',
-          title: 'Perfil indisponivel',
-          message: 'Nao foi possivel carregar seus dados agora. Atualize a pagina para tentar novamente.',
+          title: 'Perfil indisponível',
+          message: 'Não foi possível carregar seus dados agora. Atualize a página para tentar novamente.',
         });
       }
     }
@@ -146,7 +146,7 @@ const Perfil = () => {
       showFeedback({
         type: 'success',
         title: 'Perfil atualizado',
-        message: 'Suas informacoes foram salvas com sucesso.',
+        message: 'Suas informações foram salvas com sucesso.',
       });
       updateUser(response.data.usuario);
       
@@ -195,7 +195,7 @@ const Perfil = () => {
 
             <div className="form-grid">
               <div className="form-group">
-                <label>Nome Completo</label>
+                <label>Nome completo</label>
                 <input type="text" value={safeUser.nome || ''} disabled />
                 <span className="input-caption">O nome deve ser alterado via RH central.</span>
               </div>
@@ -275,7 +275,7 @@ const Perfil = () => {
 
             <div className="form-grid">
               <div className="form-group full-width">
-                <label htmlFor="senha_atual">Senha Atual</label>
+                <label htmlFor="senha_atual">Senha atual</label>
                 <input 
                   type="password" 
                   id="senha_atual" 
@@ -286,7 +286,7 @@ const Perfil = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="nova_senha">Nova Senha</label>
+                <label htmlFor="nova_senha">Nova senha</label>
                 <input 
                   type="password" 
                   id="nova_senha" 
@@ -297,7 +297,7 @@ const Perfil = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="confirmacao_senha">Confirmar Nova Senha</label>
+                <label htmlFor="confirmacao_senha">Confirmar nova senha</label>
                 <input 
                   type="password" 
                   id="confirmacao_senha" 

@@ -4,8 +4,8 @@ import './styles.css';
 
 const TITLES = {
   success: 'Sucesso',
-  error: 'Nao foi possivel concluir',
-  warning: 'Atencao',
+  error: 'Não foi possível concluir',
+  warning: 'Atenção',
   info: 'Aviso',
 };
 

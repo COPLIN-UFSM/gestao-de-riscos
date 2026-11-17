@@ -114,7 +114,7 @@ const Cadastro = () => {
     if (formData.id_setores.length === 0) {
       showFeedback({
         type: 'warning',
-        title: 'Selecao obrigatória',
+        title: 'Seleção obrigatória',
         message: 'Selecione pelo menos uma unidade para concluir o cadastro.',
       });
       return;
@@ -127,7 +127,7 @@ const Cadastro = () => {
       showFeedback({
         type: 'success',
         title: 'Cadastro concluído',
-        message: 'Sua conta foi criada com sucesso. Voce sera redirecionado para o login.',
+        message: 'Sua conta foi criada com sucesso. Você será redirecionado para a tela de login.',
       });
       setTimeout(() => navigate('/login'), 1200);
     } catch (error) {
@@ -155,19 +155,19 @@ const Cadastro = () => {
 
         <form onSubmit={handleCadastro}>
           <div className="input-group">
-            <label htmlFor="nome">Nome Completo</label>
+            <label htmlFor="nome">Nome completo</label>
             <input
               type="text"
               id="nome"
               value={formData.nome}
               onChange={handleChange}
-              placeholder="Como você gostaria de ser chamado"
+              placeholder="Como você gostaria de ser chamado?"
               required
             />
           </div>
 
           <div className="input-group">
-            <label htmlFor="email">Email Institucional</label>
+            <label htmlFor="email">E-mail institucional</label>
             <input
               type="email"
               id="email"
@@ -204,7 +204,7 @@ const Cadastro = () => {
           </div>
 
           <div className="input-group" ref={dropdownRef}>
-            <label>Unidades Vinculadas</label>
+            <label>Unidades vinculadas</label>
             <div className={`custom-select-trigger ${isDropdownOpen ? 'open' : ''}`} onClick={toggleDropdown}>
               <span>{getSetoresSelecionadosTexto()}</span>
               <i className="arrow-icon"></i>
@@ -253,7 +253,7 @@ const Cadastro = () => {
 
         <footer className="cadastro-footer">
           <p>
-            Ja possui uma conta?{' '}
+            Já possui uma conta?{' '}
             <Link to="/login" className="login-link">
               Fazer Login
             </Link>

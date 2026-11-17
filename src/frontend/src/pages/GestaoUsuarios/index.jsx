@@ -323,7 +323,7 @@ const GestaoUsuarios = () => {
               {erroEditar && <div className="error-message-perfil">{erroEditar}</div>}
 
               <div className="form-group">
-                <label htmlFor="nome">Nome Completo</label>
+                <label htmlFor="nome">Nome completo</label>
                 <input id="nome" type="text" value={formEditar.nome} onChange={handleFormEditarChange} required />
               </div>
               <div className="form-group">
@@ -339,7 +339,7 @@ const GestaoUsuarios = () => {
               </div>
 
               <div className="form-group">
-                <label>Setores / Unidades</label>
+                <label>Setores e unidades</label>
                 <input
                   type="text"
                   className="modal-setor-busca"
@@ -406,7 +406,7 @@ const GestaoUsuarios = () => {
                 <input id="siape" type="text" value={form.siape} onChange={handleFormChange} required />
               </div>
               <div className="form-group">
-                <label htmlFor="nome">Nome Completo</label>
+                <label htmlFor="nome">Nome completo</label>
                 <input id="nome" type="text" value={form.nome} onChange={handleFormChange} required />
               </div>
               <div className="form-group">
@@ -425,11 +425,11 @@ const GestaoUsuarios = () => {
                   <option value="gestor">Gestor</option>
                   <option value="gestor_adm">Gestor Administrador</option>
                 </select>
-                <span className="input-caption">Gestor Administrador pode adicionar e remover membros da equipe.</span>
+                <span className="input-caption">O gestor administrador pode adicionar e remover membros da equipe.</span>
               </div>
 
               <div className="form-group">
-                <label>Setores / Unidades</label>
+                <label>Setores e unidades</label>
                 <input
                   type="text"
                   className="modal-setor-busca"

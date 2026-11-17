@@ -92,7 +92,7 @@ const VisualizarPlano = () => {
       showFeedback({ type: 'success', title: 'Arquivo gerado', message: `O arquivo em ${tipo.toUpperCase()} foi preparado.` });
     } catch (err) {
       console.error(`Erro ao exportar ${tipo}:`, err);
-      showFeedback({ type: 'error', title: 'Download nao concluido', message: getApiErrorMessage(err, 'exportacao') });
+      showFeedback({ type: 'error', title: 'Download não concluído', message: getApiErrorMessage(err, 'exportacao') });
     } finally {
       setExporting('');
     }

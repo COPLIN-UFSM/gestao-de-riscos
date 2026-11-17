@@ -90,8 +90,8 @@ const PlanosRisco = () => {
       console.error('Erro ao carregar estatísticas:', err);
       showFeedback({
         type: 'warning',
-        title: 'Indicadores indisponiveis',
-        message: 'Nao foi possivel atualizar os indicadores de planos agora. Tente novamente em instantes.',
+        title: 'Indicadores indisponíveis',
+        message: 'Não foi possível atualizar os indicadores dos planos agora. Tente novamente em instantes.',
       });
     }
   }
@@ -113,7 +113,7 @@ const PlanosRisco = () => {
       console.error('Erro ao carregar planos:', err);
       showFeedback({
         type: 'error',
-        title: 'Listagem indisponivel',
+        title: 'Listagem indisponível',
         message: getApiErrorMessage(err, 'planos_risco'),
       });
     } finally {
@@ -143,7 +143,7 @@ const PlanosRisco = () => {
       downloadBlob(response.data, 'planos-risco.xlsx');
       showFeedback({ type: 'success', title: 'Excel gerado', message: 'O arquivo com os planos filtrados foi preparado.' });
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Exportacao nao concluida', message: getApiErrorMessage(err, 'exportacao') });
+      showFeedback({ type: 'error', title: 'Exportação não concluída', message: getApiErrorMessage(err, 'exportacao') });
     } finally {
       setExportingExcel(false);
     }
@@ -163,9 +163,9 @@ const PlanosRisco = () => {
         responseType: 'blob',
       });
       downloadBlob(response.data, 'relatorio-gerencial.pdf');
-      showFeedback({ type: 'success', title: 'Relatorio gerado', message: 'O relatorio gerencial em PDF foi preparado.' });
+      showFeedback({ type: 'success', title: 'Relatório gerado', message: 'O relatório gerencial em PDF foi preparado.' });
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Relatorio nao concluido', message: getApiErrorMessage(err, 'exportacao') });
+      showFeedback({ type: 'error', title: 'Relatório não concluído', message: getApiErrorMessage(err, 'exportacao') });
     } finally {
       setExportingRelatorio(false);
     }
@@ -178,11 +178,11 @@ const PlanosRisco = () => {
       showFeedback({
         type: 'success',
         title: 'Plano duplicado',
-        message: 'O plano foi copiado. Voce pode edita-lo agora.',
+        message: 'O plano foi copiado. Você pode editá-lo agora.',
       });
       navigate(`/editar-plano/${response.data.uuid}?step=1`);
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Duplicacao falhou', message: getApiErrorMessage(err, 'planos_risco') });
+      showFeedback({ type: 'error',       title: 'A duplicação falhou', message: getApiErrorMessage(err, 'planos_risco') });
     } finally {
       setDuplicandoId(null);
     }
@@ -195,7 +195,7 @@ const PlanosRisco = () => {
   );
   const setorSelecionadoLabel = filterSetor
     ? (getSetorLabel(todosSetores.find(s => s.id === filterSetor) || {}) || 'Unidade selecionada')
-    : 'Todos os Setores';
+    : 'Todos os setores';
 
   const canEdit = (plano) => userSetoresIds.includes(plano.setor);
 
@@ -224,7 +224,7 @@ const PlanosRisco = () => {
           <div className="header-actions">
             <button
               className="export-button"
-              title="Relatorio gerencial em PDF"
+              title="Relatório gerencial em PDF"
               onClick={exportarRelatorio}
               disabled={exportingRelatorio}
             >
@@ -367,7 +367,7 @@ const PlanosRisco = () => {
                             className={`setor-option ${!filterSetor ? 'selected' : ''}`}
                             onClick={() => { setFilterSetor(''); setSetorDropdownOpen(false); setCurrentPage(1); }}
                           >
-                            Todos os Setores
+                            Todos os setores
                           </button>
                           {setoresFiltrados.map(s => (
                             <button

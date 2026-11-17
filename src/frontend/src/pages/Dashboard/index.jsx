@@ -285,7 +285,7 @@ const Dashboard = () => {
       console.error('Erro ao carregar dados do dashboard:', err);
       showFeedback({
         type: 'error',
-        title: 'Dashboard indisponivel',
+        title: 'Dashboard indisponível',
         message: getApiErrorMessage(err, 'dashboard'),
       });
     } finally {
@@ -347,7 +347,7 @@ const Dashboard = () => {
   );
   const setorSelecionadoLabel = filterSetor
     ? (getSetorLabel(todosSetores.find((s) => s.id === filterSetor) || {}) || 'Unidade selecionada')
-    : 'Todas as Unidades';
+    : 'Todas as unidades';
 
   return (
     <div className="dashboard-container">
@@ -461,7 +461,7 @@ const Dashboard = () => {
                         className={`dash-setor-option${filterSetor === '' ? ' selected' : ''}`}
                         onClick={() => { setFilterSetor(''); setSetorDropdownOpen(false); setSetorSearch(''); }}
                       >
-                        Todas as Unidades
+                        Todas as unidades
                       </li>
                       {setoresFiltradosDropdown.map((s) => (
                         <li
