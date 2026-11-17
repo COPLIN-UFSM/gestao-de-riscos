@@ -52,6 +52,13 @@ O `manage.py` seleciona `src.gestao_risco.settings.development` por padrão. Ess
 na raiz. As migrations versionadas criam as tabelas e carregam os dados de referência do PDI e das unidades da UFSM. Não
 é necessário iniciar um container de banco nem executar `makemigrations` para preparar o banco.
 
+```bash
+python manage.py importar_unidades_ufsm
+```
+
+Importa as unidades da UFSM do CSV versionado. Esse comando é idempotente: se o banco já tiver unidades, ele atualiza
+os registros existentes e cria os novos.
+
 Opcionalmente, crie dados fictícios para testar a interface:
 
 ```bash

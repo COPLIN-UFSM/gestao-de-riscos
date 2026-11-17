@@ -18,11 +18,13 @@ CSV_INCOMPLETO = """COD_ESTRUTURADO,NOME_UNIDADE,NOME_CENTRO,SIGLA_CENTRO,SITUAC
 @pytest.mark.django_db
 class TestImportacaoUnidades:
     def test_retorna_caminho_padrao_csv(self):
-        # este teste confere o local padrao esperado para o csv oficial
         caminho = caminho_padrao_unidades()
 
-        assert isinstance(caminho, Path)
-        assert caminho.name == "unidades.csv"
+        caminho_esperado = (
+            Path(__file__).resolve().parents[3] / "backend" / "database" / "unidades.csv"
+        )
+        assert caminho == caminho_esperado
+        assert caminho.is_file()
 
     def test_falha_quando_csv_nao_existe(self, tmp_path):
         # um caminho inexistente deve gerar erro explicito

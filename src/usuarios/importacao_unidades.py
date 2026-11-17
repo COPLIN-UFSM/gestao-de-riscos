@@ -10,7 +10,8 @@ CAMPOS_OBRIGATORIOS = (
 
 
 def caminho_padrao_unidades():
-    return Path(__file__).resolve().parent / "data" / "unidades.csv"
+    raiz_projeto = Path(__file__).resolve().parents[2]
+    return raiz_projeto / "backend" / "database" / "unidades.csv"
 
 
 def importar_unidades_csv(setor_model, caminho_csv=None, desativar_legado=False):

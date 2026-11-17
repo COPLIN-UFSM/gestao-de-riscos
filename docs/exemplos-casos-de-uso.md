@@ -156,3 +156,6 @@ Fluxo esperado:
 ```bash
 python manage.py importar_unidades_ufsm
 ```
+
+Por padrão, o comando lê `backend/database/unidades.csv`; use `--arquivo` somente para
+informar um CSV alternativo.

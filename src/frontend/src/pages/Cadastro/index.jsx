@@ -34,8 +34,8 @@ const Cadastro = () => {
         setSetoresDisponiveis([]);
         showFeedback({
           type: 'warning',
-          title: 'Unidades indisponiveis',
-          message: 'Nao foi possivel carregar as unidades agora. Atualize a pagina para tentar novamente.',
+          title: 'Unidades indisponíveis',
+          message: 'Não foi possível carregar as unidades agora. Atualize a página para tentar novamente.',
         });
       } finally {
         setLoadingSetores(false);
@@ -114,7 +114,7 @@ const Cadastro = () => {
     if (formData.id_setores.length === 0) {
       showFeedback({
         type: 'warning',
-        title: 'Selecao obrigatoria',
+        title: 'Selecao obrigatória',
         message: 'Selecione pelo menos uma unidade para concluir o cadastro.',
       });
       return;
@@ -126,14 +126,14 @@ const Cadastro = () => {
       await api.post('/usuarios/registro/', formData);
       showFeedback({
         type: 'success',
-        title: 'Cadastro concluido',
+        title: 'Cadastro concluído',
         message: 'Sua conta foi criada com sucesso. Voce sera redirecionado para o login.',
       });
       setTimeout(() => navigate('/login'), 1200);
     } catch (error) {
       showFeedback({
         type: 'error',
-        title: 'Cadastro nao concluido',
+        title: 'Cadastro não concluído',
         message: getApiErrorMessage(error, 'cadastro'),
       });
     } finally {
@@ -150,7 +150,7 @@ const Cadastro = () => {
       <main className="cadastro-card">
         <header className="cadastro-header">
           <p className="cadastro-title-small">Crie sua conta para acessar o sistema</p>
-          <h1 className="cadastro-title-large">Sistema de Gestao de Riscos</h1>
+          <h1 className="cadastro-title-large">Sistema de Gestão de Riscos</h1>
         </header>
 
         <form onSubmit={handleCadastro}>
@@ -161,7 +161,7 @@ const Cadastro = () => {
               id="nome"
               value={formData.nome}
               onChange={handleChange}
-              placeholder="Como voce gostaria de ser chamado"
+              placeholder="Como você gostaria de ser chamado"
               required
             />
           </div>
@@ -186,7 +186,7 @@ const Cadastro = () => {
                 id="siape"
                 value={formData.siape}
                 onChange={handleChange}
-                placeholder="Matricula"
+                placeholder="Matrícula"
                 required
               />
             </div>
