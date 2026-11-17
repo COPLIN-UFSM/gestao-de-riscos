@@ -9,7 +9,8 @@ def popular_unidades_oficiais(apps, schema_editor):
         return
 
     Setor = apps.get_model("usuarios", "Setor")
-    caminho_csv = Path(__file__).resolve().parents[1] / "data" / "unidades.csv"
+    raiz_projeto = Path(__file__).resolve().parents[3]
+    caminho_csv = raiz_projeto / "backend" / "database" / "unidades.csv"
 
     for setor in Setor.objects.all():
         setor.sigla_centro = setor.sigla or ""
