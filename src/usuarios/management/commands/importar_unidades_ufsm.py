@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Importacao concluida com sucesso. "
+                "Importação concluída com sucesso. "
                 f"Criados: {resultado['criados']}. "
                 f"Atualizados: {resultado['atualizados']}. "
                 f"Arquivo: {resultado['arquivo']}"

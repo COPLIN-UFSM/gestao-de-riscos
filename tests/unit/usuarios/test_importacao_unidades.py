@@ -22,7 +22,7 @@ class TestImportacaoUnidades:
         caminho = caminho_padrao_unidades()
 
         assert isinstance(caminho, Path)
-        assert caminho.name == "unidades_ufsm.csv"
+        assert caminho.name == "unidades.csv"
 
     def test_falha_quando_csv_nao_existe(self, tmp_path):
         # um caminho inexistente deve gerar erro explicito
