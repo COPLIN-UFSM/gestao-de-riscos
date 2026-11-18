@@ -2,7 +2,7 @@ import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
-from src.riscos.models import DesafioPDI, ObjetivoPDI
+from src.riscos.models import DesafioPDI, Macroprocesso, ObjetivoPDI
 
 
 @pytest.mark.django_db
@@ -11,11 +11,16 @@ class TestImportarPDI:
         call_command("importar_pdi")
 
         assert DesafioPDI.objects.count() == 7
+        assert Macroprocesso.objects.count() == 22
+        assert Macroprocesso.objects.filter(
+            nome="Compras, Suprimentos e Patrimônio"
+        ).exists()
         assert ObjetivoPDI.objects.count() == 43
 
-    def test_importa_e_atualiza_desafios_e_objetivos(self, tmp_path):
+    def test_importa_e_atualiza_desafios_macroprocessos_e_objetivos(self, tmp_path):
         caminho_desafios = tmp_path / "desafios.csv"
         caminho_objetivos = tmp_path / "objetivos.csv"
+        caminho_macroprocessos = tmp_path / "macroprocessos.csv"
         caminho_desafios.write_text(
             "numero,descricao\n99,Desafio de teste\n",
             encoding="utf-8",
@@ -25,12 +30,18 @@ class TestImportarPDI:
             "TEST-99,\"Objetivo de teste, com vírgula\",99\n",
             encoding="utf-8",
         )
+        caminho_macroprocessos.write_text(
+            "nome\nMacroprocesso de teste\n",
+            encoding="utf-8",
+        )
         argumentos = {
             "arquivo_desafios": caminho_desafios,
             "arquivo_objetivos": caminho_objetivos,
+            "arquivo_macroprocessos": caminho_macroprocessos,
         }
 
         call_command("importar_pdi", **argumentos)
+        Macroprocesso.objects.get(nome="Macroprocesso de teste").delete()
         caminho_desafios.write_text(
             "numero,descricao\n99,Desafio atualizado\n",
             encoding="utf-8",
@@ -39,14 +50,21 @@ class TestImportarPDI:
             "codigo,descricao,numero_desafio\nTEST-99,Objetivo atualizado,99\n",
             encoding="utf-8",
         )
+        caminho_macroprocessos.write_text(
+            "nome\nMacroprocesso de teste\n",
+            encoding="utf-8",
+        )
         call_command("importar_pdi", **argumentos)
 
         desafio = DesafioPDI.objects.get(numero=99)
         objetivo = ObjetivoPDI.objects.get(codigo="TEST-99")
+        macroprocesso = Macroprocesso.objects.get(nome="Macroprocesso de teste")
         assert desafio.descricao == "Desafio atualizado"
         assert objetivo.descricao == "Objetivo atualizado"
         assert objetivo.desafio == desafio
+        assert macroprocesso.ativo
         assert DesafioPDI.objects.filter(numero=99).count() == 1
+        assert Macroprocesso.objects.filter(nome="Macroprocesso de teste").count() == 1
         assert ObjetivoPDI.objects.filter(codigo="TEST-99").count() == 1
 
     def test_rejeita_objetivo_com_desafio_inexistente(self, tmp_path):

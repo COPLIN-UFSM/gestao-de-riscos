@@ -4,7 +4,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from src.riscos.models import DesafioPDI, ObjetivoPDI
+from src.riscos.models import DesafioPDI, Macroprocesso, ObjetivoPDI
 
 
 def _ler_csv(caminho, campos_obrigatorios):
@@ -34,7 +34,7 @@ def _valor_obrigatorio(linha, campo, numero_linha, caminho):
 
 
 class Command(BaseCommand):
-    help = "Importa ou atualiza desafios e objetivos do PDI a partir de arquivos CSV."
+    help = "Importa ou atualiza desafios, macroprocessos e objetivos do PDI a partir de arquivos CSV."
 
     def add_arguments(self, parser):
         raiz_projeto = Path(__file__).resolve().parents[4]
@@ -51,14 +51,22 @@ class Command(BaseCommand):
             type=Path,
             help="CSV com as colunas codigo,descricao,numero_desafio.",
         )
+        parser.add_argument(
+            "--arquivo-macroprocessos",
+            default=diretorio_padrao / "macroprocessos_pdi.csv",
+            type=Path,
+            help="CSV com a coluna nome.",
+        )
 
     def handle(self, *args, **options):
         caminho_desafios = options["arquivo_desafios"]
         caminho_objetivos = options["arquivo_objetivos"]
+        caminho_macroprocessos = options["arquivo_macroprocessos"]
         linhas_desafios = _ler_csv(caminho_desafios, ("numero", "descricao"))
         linhas_objetivos = _ler_csv(
             caminho_objetivos, ("codigo", "descricao", "numero_desafio")
         )
+        linhas_macroprocessos = _ler_csv(caminho_macroprocessos, ("nome",))
 
         desafios = {}
         for numero_linha, linha in enumerate(linhas_desafios, start=2):
@@ -106,6 +114,18 @@ class Command(BaseCommand):
                 ) from exc
             objetivos[codigo] = (descricao, numero_desafio)
 
+        macroprocessos = set()
+        for numero_linha, linha in enumerate(linhas_macroprocessos, start=2):
+            nome = _valor_obrigatorio(
+                linha, "nome", numero_linha, caminho_macroprocessos
+            )
+            if nome in macroprocessos:
+                raise CommandError(
+                    f"Macroprocesso duplicado ({nome}) no arquivo "
+                    f"{caminho_macroprocessos}."
+                )
+            macroprocessos.add(nome)
+
         numeros_desafios_db = set(
             DesafioPDI.all_objects.filter(numero__in=[
                 numero for _, numero in objetivos.values()
@@ -123,6 +143,7 @@ class Command(BaseCommand):
             )
 
         desafios_criados = desafios_atualizados = 0
+        macroprocessos_criados = macroprocessos_atualizados = 0
         objetivos_criados = objetivos_atualizados = 0
 
         with transaction.atomic():
@@ -137,6 +158,16 @@ class Command(BaseCommand):
                     desafios_criados += 1
                 else:
                     desafios_atualizados += 1
+
+            for nome in macroprocessos:
+                _, criado = Macroprocesso.all_objects.update_or_create(
+                    nome=nome,
+                    defaults={"ativo": True},
+                )
+                if criado:
+                    macroprocessos_criados += 1
+                else:
+                    macroprocessos_atualizados += 1
 
             if objetivos:
                 numeros_objetivos = {
@@ -169,6 +200,8 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 "Importação do PDI concluída. "
                 f"Desafios criados: {desafios_criados}; atualizados: {desafios_atualizados}. "
+                f"Macroprocessos criados: {macroprocessos_criados}; "
+                f"atualizados: {macroprocessos_atualizados}. "
                 f"Objetivos criados: {objetivos_criados}; atualizados: {objetivos_atualizados}."
             )
         )
