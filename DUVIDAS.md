@@ -53,70 +53,41 @@ Durante o cadastro de usuários pela API, o `RegistroUsuarioSerializer` utiliza 
 
 ---
 
-## 2. Código de recuperação de senha (`CodigoRecuperacao`)
+## 2. Recuperação de senha por link temporário
 
 ### Finalidade
 
-O sistema de recuperação de senha permite que um usuário que não se recorda de sua senha solicite um código temporário por e-mail para realizar a redefinição.
-
-Esse mecanismo permite recuperar o acesso à conta sem precisar da intervenção direta de um administrador.
+O usuário solicita um link no endereço de e-mail associado à conta e usa esse link para definir uma nova senha, sem precisar da intervenção de um administrador.
 
 ### Como funciona
 
-O processo utiliza o modelo `CodigoRecuperacao`, localizado em `src/usuarios/models.py`, cuja tabela correspondente no banco de dados é `codigos_recuperacao`.
-
-A tabela armazena as seguintes informações:
-
-| Campo | Finalidade |
-|---|---|
-| E-mail | Identifica o endereço associado à solicitação de recuperação. |
-| Código | Armazena o código de seis dígitos enviado ao usuário. |
-| Data e hora de criação | Permite verificar quando o código foi gerado e controlar seu prazo de validade. |
-
-A tabela é criada pela migration `src/usuarios/migrations/0002_codigorecuperacao.py`.
+O servidor usa o `PasswordResetTokenGenerator` do Django para gerar um token assinado usando os dados atuais do usuário. O token não é salvo em uma tabela, expira após uma hora e fica inválido após a troca da senha. A migration `0012_remove_codigorecuperacao.py` remove a tabela antiga de códigos.
 
 ### Etapas da recuperação
 
 O fluxo é conduzido pelas rotas e respectivas views implementadas em `src/usuarios/views.py`:
 
-1. **Solicitação:** o usuário informa seu e-mail para iniciar a recuperação.
-2. **Geração:** a aplicação gera um código de seis dígitos e registra as informações na tabela `codigos_recuperacao`.
-3. **Envio:** o código é enviado ao usuário por e-mail.
-4. **Validação:** o usuário informa o código recebido, e a aplicação verifica se ele corresponde ao registro armazenado e se ainda está dentro do prazo de validade.
-5. **Redefinição:** após a validação, o usuário pode cadastrar uma nova senha.
-6. **Remoção:** o código é removido após sua utilização ou quando a aplicação identifica que ele expirou.
-
-### Prazo de validade
-
-O código possui validade de **um minuto**, contado a partir do horário de criação. Após esse período, ele não deve mais ser aceito pela aplicação.
+1. **Solicitação:** o usuário informa o e-mail cadastrado.
+2. **Envio:** se o endereço corresponder a uma conta, o sistema envia um link com o identificador do usuário e o token.
+3. **Redefinição:** o frontend envia o token e a nova senha à API, que verifica a validade e aplica os validadores de senha do Django.
+4. **Invalidação:** após a troca, o token deixa de ser válido e os tokens de login existentes são revogados.
 
 ### Cuidados de segurança
 
-Existem alguns pontos importantes relacionados à implementação atual:
-
-- O código é armazenado diretamente como texto no banco de dados, sem utilização de hash.
-- A geração utiliza `random.randint`, que não é o método mais adequado para gerar códigos destinados à autenticação.
-- É recomendável utilizar um gerador criptograficamente seguro, como `secrets`, do Python.
-- Também é recomendável armazenar o código como hash e implementar um limite de tentativas de validação.
-
-Essas melhorias ajudam a reduzir o risco de utilização indevida dos códigos de recuperação.
+- A resposta da solicitação é igual para endereços cadastrados e não cadastrados, para reduzir enumeração de contas.
+- A solicitação é limitada por IP; o segredo do Django e o token temporário assinado protegem o fluxo.
+- Em produção, `PASSWORD_RESET_URL` deve apontar para a tela pública HTTPS do frontend.
+- SMTP deve estar configurado para que a mensagem chegue ao destinatário; falhas de envio ficam registradas nos logs do servidor.
 
 ### Onde está implementado?
 
 | Arquivo ou configuração | Responsabilidade |
 |---|---|
-| `src/usuarios/models.py` | Define o modelo `CodigoRecuperacao`. |
-| `src/usuarios/migrations/0002_codigorecuperacao.py` | Cria a tabela de recuperação no banco de dados. |
-| `src/usuarios/views.py` | Implementa o envio, a validação e a redefinição de senha. |
-| `codigos_recuperacao` | Armazena os códigos temporários e seus dados associados. |
+| `src/usuarios/views.py` | Envio do link, validação do token e redefinição de senha. |
+| `src/usuarios/urls.py` | Rotas de solicitação e redefinição. |
+| `PASSWORD_RESET_URL` | URL pública do frontend incluída no e-mail. |
 
-**Em resumo:** o código de recuperação permite que o próprio usuário redefina sua senha por meio de um código temporário enviado ao e-mail cadastrado.
-
-**Mudar o método de recuperação de conta posteriormente exigirá alterações no modelo, na tabela e nas views**, 
-mas a finalidade do componente permanecerá a mesma: permitir que o usuário recupere o acesso à sua conta de forma segura.
-**Procurar achar um método de fazer isso sem a necessidade de uma tabela no banco de dados** é uma melhoria que pode ser considerada, mas atualmente a tabela `codigos_recuperacao` é necessária para armazenar os códigos temporários e controlar seu prazo de validade.
-
-**Recomendação encontrada:** Usar um token assinado do Django em vez de um código numérico. Evita guardar o token no banco, mas muda o fluxo para validar um token/link e exige definir o prazo de validade.
+**Em resumo:** a recuperação não armazena códigos ou tokens em tabelas; a posse do link enviado ao e-mail cadastrado autoriza a redefinição durante o prazo de validade.
 
 ---
 

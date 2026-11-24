@@ -7,7 +7,6 @@ const api = axios.create({
 const PUBLIC_ENDPOINTS = [
   '/usuarios/login/',
   '/usuarios/recuperar-senha/enviar/',
-  '/usuarios/recuperar-senha/validar/',
   '/usuarios/recuperar-senha/redefinir/',
 ];
 

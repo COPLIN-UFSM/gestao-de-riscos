@@ -164,17 +164,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         return f"{self.siape} - {self.nome}"
 
 
-class CodigoRecuperacao(models.Model):
-    email = models.EmailField(db_column="email")
-    codigo = models.CharField(max_length=6, db_column="codigo")
-    criado_em = models.DateTimeField(auto_now_add=True, db_column="criado_em")
-
-    class Meta:
-        db_table = "codigos_recuperacao"
-        verbose_name = "Código de Recuperação"
-        verbose_name_plural = "Códigos de Recuperação"
-
-
 # Alias público para o modelo Setor.
 # Internamente (migrations, tabela DB, FKs), o modelo se chama "Setor" e a tabela
 # é "setores" — renomear exigiria uma migration de dados.

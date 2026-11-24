@@ -100,13 +100,13 @@ Importe-a diretamente no Postman para testar a API com exemplos prontos de corpo
 ### Recuperacao de senha
 
 - `POST /api/usuarios/recuperar-senha/enviar/`
-  - envia o codigo de recuperacao para o e-mail informado.
-
-- `POST /api/usuarios/recuperar-senha/validar/`
-  - valida o codigo recebido (expira em 1 minuto).
+  - solicita um link temporario de redefinicao; por seguranca, a resposta não informa se o e-mail existe;
+  - o link é enviado apenas quando o endereço corresponde a uma conta.
 
 - `POST /api/usuarios/recuperar-senha/redefinir/`
-  - redefine a senha com o codigo validado.
+  - recebe `uid`, `token`, `nova_senha` e `confirmacao_senha`;
+  - redefine a senha se o token assinado ainda for válido, por até uma hora;
+  - invalida o token usado e revoga os tokens de autenticação existentes.
 
 ---
 

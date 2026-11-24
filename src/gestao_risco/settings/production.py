@@ -1,5 +1,4 @@
 import os
-import logging
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -75,6 +74,9 @@ CORS_ALLOWED_ORIGINS = [
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
+PASSWORD_RESET_URL = os.environ.get("PASSWORD_RESET_URL", "")
+if not PASSWORD_RESET_URL.startswith("https://"):
+    raise ImproperlyConfigured("Set PASSWORD_RESET_URL to the HTTPS password-reset page.")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True

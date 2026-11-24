@@ -64,7 +64,7 @@ python -m pytest
 
 ## Produção com DB2
 
-No servidor, mantenha o `.env` fora do repositório e configure `SECRET_KEY`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` e `DB_SCHEMA`. O perfil `src.gestao_risco.settings.production` exige essas configurações e conecta ao DB2 existente.
+No servidor, mantenha o `.env` fora do repositório e configure `SECRET_KEY`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` e `DB_SCHEMA`. O perfil `src.gestao_risco.settings.production` exige essas configurações e conecta ao DB2 existente. Para recuperação de senha, configure também `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_HOST_USER` e `EMAIL_HOST_PASSWORD` com as credenciais SMTP do serviço de e-mail, além de `PASSWORD_RESET_URL` com o endereço HTTPS público da tela de recuperação (por exemplo, `https://proplan.ufsm.br/gestao-de-riscos/recuperar-senha`). O remetente padrão usa `EMAIL_HOST_USER`; se usar `DEFAULT_FROM_EMAIL`, ele deve ser um endereço autorizado pelo provedor.
 
 O Docker Compose não cria serviço de banco. No diretório do projeto no servidor:
 

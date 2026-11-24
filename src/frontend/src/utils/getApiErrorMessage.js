@@ -1,8 +1,7 @@
 const GENERIC_MESSAGES = {
   login: 'Não foi possível entrar agora. Revise seu SIAPE e sua senha e tente novamente.',
   cadastro: 'Não foi possível concluir o cadastro agora. Revise os dados informados e tente novamente.',
-  recuperar_enviar: 'Não foi possível enviar o código agora. Tente novamente em instantes.',
-  recuperar_validar: 'Não foi possível validar o código informado. Revise os dígitos e tente novamente.',
+  recuperar_enviar: 'Não foi possível solicitar a recuperação agora. Tente novamente em instantes.',
   recuperar_redefinir: 'Não foi possível redefinir a senha agora. Tente novamente em instantes.',
   default: 'Não foi possível concluir esta ação agora. Tente novamente em instantes.',
 };

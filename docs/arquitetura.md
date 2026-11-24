@@ -122,7 +122,7 @@ No app `usuarios`, os principais models são:
 
 - `Setor`: representa uma unidade administrativa da UFSM (alias público: `UnidadeOrganizacional`).
 - `Usuario`: usuário customizado autenticado por SIAPE, vinculado a múltiplos setores. Possui campo `cargo` (`gestor` ou `gestor_adm`), campo `uuid` (identificador público exposto pela API — o ID interno sequencial nunca é retornado ao cliente), campo `sem_equipe_desde` (data em que o usuário ficou sem setor; após 7 dias, `is_active` retorna `False` e o acesso é bloqueado) e suporte a soft delete via campo `ativo`.
-- `CodigoRecuperacao`: código temporário usado no fluxo de recuperação de senha.
+- Recuperação de senha: usa tokens assinados e temporários do Django; os tokens não são persistidos no banco.
 
 No app `riscos`, os principais models são:
 

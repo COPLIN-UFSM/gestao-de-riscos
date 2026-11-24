@@ -40,15 +40,6 @@ classDiagram
         -id: Integer
     }
 
-    class CodigoRecuperacao {
-        -id: Integer
-        -email: String
-        -codigo: String
-        -criadoEm: DateTime
-        +gerarCodigo(): String
-        +validarExpiracao(): Boolean
-    }
-
     class DesafioPDI {
         -id: Integer
         -numero: Integer
@@ -154,7 +145,6 @@ classDiagram
     GerenciadorUsuario ..> Usuario : cria e gerencia
     Usuario "1" --> "0..*" UsuarioSetor : associa
     Setor "1" --> "0..*" UsuarioSetor : associa
-    Usuario "1" --> "0..*" CodigoRecuperacao : solicita
     DesafioPDI "1" --> "0..*" ObjetivoPDI : organiza
     Setor "1" --> "0..*" Risco : possui
     ObjetivoPDI "1" --> "0..*" Risco : referencia
@@ -169,7 +159,6 @@ classDiagram
     note for GerenciadorUsuario "Serviço de suporte à criação de usuários no Django."
     note for Usuario "cargo: gestor (padrão) ou gestor_adm. Apenas gestor_adm pode gerenciar membros de equipe. delete() faz soft delete (ativo=False)."
     note for UsuarioSetor "Representa a associação muitos-para-muitos entre usuário e setor."
-    note for CodigoRecuperacao "Usado no fluxo de envio, validação e redefinição de senha; o e-mail é mantido como dado operacional."
     note for Risco "delete() desativa o risco e propaga soft delete para PlanoAcao e Monitoramento vinculados."
     note for PlanoAcao "Representa o tratamento do risco em formato 5W2H. delete() faz soft delete."
     note for Monitoramento "Mantém o histórico de acompanhamento e análise do risco. delete() faz soft delete."

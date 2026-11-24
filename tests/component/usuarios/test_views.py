@@ -1,4 +1,8 @@
+from urllib.parse import parse_qs, urlparse
+
 import pytest
+from django.core import mail
+from django.test import override_settings
 from rest_framework import status
 
 from src.usuarios.models import Setor, Usuario
@@ -105,82 +109,95 @@ class TestUsuarioViews:
         usuario.refresh_from_db()
         assert usuario.check_password("nova_senha_456") is True
 
-    def test_enviar_codigo_sucesso(self, api_client, usuario):
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_solicitar_recuperacao_envia_link_temporario(self, api_client, usuario):
         url = "/api/usuarios/recuperar-senha/enviar/"
-        payload = {"email": usuario.email}
+        payload = {"email": usuario.email.upper()}
         response = api_client.post(url, payload, format='json')
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["mensagem"] == "Código enviado com sucesso!"
+        assert response.data["mensagem"] == (
+            "Se o e-mail estiver cadastrado e o serviço de envio estiver disponível, "
+            "enviaremos um link de recuperação."
+        )
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].to == [usuario.email]
+        assert "redefinição" in mail.outbox[0].subject.lower()
+        link = next(line for line in mail.outbox[0].body.splitlines() if line.startswith("http"))
+        fragment = parse_qs(urlparse(link).fragment)
+        assert fragment["uid"]
+        assert fragment["token"]
 
-    def test_enviar_codigo_email_inexistente(self, api_client):
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_email_inexistente_nao_revela_se_conta_existe(self, api_client):
         url = "/api/usuarios/recuperar-senha/enviar/"
         payload = {"email": "fantasma@ufsm.br"}
         response = api_client.post(url, payload, format='json')
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    def test_validar_codigo_sucesso(self, api_client, usuario):
-        from src.usuarios.models import CodigoRecuperacao
-        CodigoRecuperacao.objects.create(email=usuario.email, codigo="123456")
-        
-        url = "/api/usuarios/recuperar-senha/validar/"
-        payload = {"email": usuario.email, "codigo": "123456"}
-        response = api_client.post(url, payload, format='json')
         assert response.status_code == status.HTTP_200_OK
-
-    def test_validar_codigo_errado(self, api_client, usuario):
-        from src.usuarios.models import CodigoRecuperacao
-        CodigoRecuperacao.objects.create(email=usuario.email, codigo="123456")
-        
-        url = "/api/usuarios/recuperar-senha/validar/"
-        payload = {"email": usuario.email, "codigo": "000000"}
-        response = api_client.post(url, payload, format='json')
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_validar_codigo_expirado(self, api_client, usuario):
-        from datetime import timedelta
-
-        from django.utils import timezone
-
-        from src.usuarios.models import CodigoRecuperacao
-        
-        # Cria o código
-        registro = CodigoRecuperacao.objects.create(email=usuario.email, codigo="123456")
-        
-        # Retrocede o tempo de criação manualmente para simular expiração (ex: 2 minutos atrás)
-        CodigoRecuperacao.objects.filter(id=registro.id).update(
-            criado_em=timezone.now() - timedelta(minutes=2)
+        assert response.data["mensagem"] == (
+            "Se o e-mail estiver cadastrado e o serviço de envio estiver disponível, "
+            "enviaremos um link de recuperação."
         )
-        
-        url = "/api/usuarios/recuperar-senha/validar/"
-        payload = {"email": usuario.email, "codigo": "123456"}
-        response = api_client.post(url, payload, format='json')
-        
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data["erro"] == "Este código expirou."
+        assert len(mail.outbox) == 0
 
-    def test_redefinir_senha_sucesso(self, api_client, usuario):
-        from src.usuarios.models import CodigoRecuperacao
-        CodigoRecuperacao.objects.create(email=usuario.email, codigo="123456")
-        
-        url = "/api/usuarios/recuperar-senha/redefinir/"
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_link_redefine_senha_uma_vez(self, api_client, usuario):
+        api_client.post(
+            "/api/usuarios/recuperar-senha/enviar/",
+            {"email": usuario.email},
+            format="json",
+        )
+        link = next(line for line in mail.outbox[0].body.splitlines() if line.startswith("http"))
+        credentials = parse_qs(urlparse(link).fragment)
         payload = {
-            "email": usuario.email,
-            "codigo": "123456",
-            "nova_senha": "nova_senha_ultra_segura",
-            "confirmacao_senha": "nova_senha_ultra_segura"
+            "uid": credentials["uid"][0],
+            "token": credentials["token"][0],
+            "nova_senha": "SenhaNova!Forte8472",
+            "confirmacao_senha": "SenhaNova!Forte8472",
         }
-        response = api_client.post(url, payload, format='json')
+
+        response = api_client.post(
+            "/api/usuarios/recuperar-senha/redefinir/", payload, format="json"
+        )
         assert response.status_code == status.HTTP_200_OK
-        
-        # Valida se a senha mudou mesmo
         usuario.refresh_from_db()
-        assert usuario.check_password("nova_senha_ultra_segura") is True
+        assert usuario.check_password(payload["nova_senha"])
+
+        response = api_client.post(
+            "/api/usuarios/recuperar-senha/redefinir/", payload, format="json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["erro"] == "O link de recuperação é inválido ou expirou."
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        PASSWORD_RESET_TIMEOUT=-1,
+    )
+    def test_link_expirado_nao_redefine_senha(self, api_client, usuario):
+        api_client.post(
+            "/api/usuarios/recuperar-senha/enviar/",
+            {"email": usuario.email},
+            format="json",
+        )
+        link = next(line for line in mail.outbox[0].body.splitlines() if line.startswith("http"))
+        credentials = parse_qs(urlparse(link).fragment)
+        response = api_client.post(
+            "/api/usuarios/recuperar-senha/redefinir/",
+            {
+                "uid": credentials["uid"][0],
+                "token": credentials["token"][0],
+                "nova_senha": "SenhaNova!Forte8472",
+                "confirmacao_senha": "SenhaNova!Forte8472",
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["erro"] == "O link de recuperação é inválido ou expirou."
 
     def test_redefinir_senha_senhas_divergentes(self, api_client, usuario):
         url = "/api/usuarios/recuperar-senha/redefinir/"
         payload = {
-            "email": usuario.email,
-            "codigo": "123456",
+            "uid": "dXNlcg",
+            "token": "token-invalido",
             "nova_senha": "senha1",
             "confirmacao_senha": "senha2"
         }

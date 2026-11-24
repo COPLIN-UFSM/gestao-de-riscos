@@ -35,6 +35,9 @@ Permite registrar novos usuários e associá-los aos setores disponíveis no sis
 
 ## Fluxo de recuperação de senha
 
+O fluxo atual solicita um link por e-mail e abre diretamente a tela de redefinição usando um token temporário assinado.
+As telas antigas abaixo ilustram o layout original e não representam mais uma etapa de validação de código.
+
 ### Etapa 1: informar e-mail
 
 Início do processo de recuperação, no qual o usuário informa o e-mail cadastrado para receber o código de validação.

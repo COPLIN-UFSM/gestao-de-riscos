@@ -1,26 +1,37 @@
-import random
-from datetime import timedelta
+import logging
 
 from django.conf import settings as django_settings
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from .models import CodigoRecuperacao, UnidadeOrganizacional, Usuario
+from .models import UnidadeOrganizacional, Usuario
 from .serializers import (
     AdminEditarUsuarioSerializer,
     AtualizarPerfilSerializer,
     RegistroUsuarioSerializer,
     UnidadeOrganizacionalSerializer,
     UsuarioSerializer,
+)
+
+logger = logging.getLogger(__name__)
+MENSAGEM_SOLICITACAO_RECUPERACAO = (
+    'Se o e-mail estiver cadastrado e o serviço de envio estiver disponível, '
+    'enviaremos um link de recuperação.'
 )
 
 
@@ -34,122 +45,87 @@ def _query_int(request, nome, padrao):
     except (TypeError, ValueError):
         return padrao
 
-class EnviarCodigoRecuperacaoView(APIView):
-    """
-    Gera e "envia" um código de 6 dígitos para o e-mail informado.
-    Valida se o e-mail pertence a um usuário cadastrado.
-    """
+class SolicitarRedefinicaoSenhaView(APIView):
+    """Envia um link temporário sem revelar se o endereço está cadastrado."""
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
 
     def post(self, request):
         email = request.data.get('email')
-        if not email:
+        if not isinstance(email, str) or not email.strip():
             return Response({'erro': 'O e-mail é obrigatório.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Valida se o usuário existe
-        if not Usuario.objects.filter(email=email).exists():
-            return Response({'erro': 'E-mail não encontrado no sistema.'}, status=status.HTTP_404_NOT_FOUND)
+        usuario = Usuario.objects.filter(email__iexact=email.strip()).first()
+        if usuario is None or not usuario.email:
+            return Response({'mensagem': MENSAGEM_SOLICITACAO_RECUPERACAO})
 
-        # Gera código de 6 dígitos
-        codigo = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-        
-        # Salva o código (remove códigos anteriores do mesmo e-mail para limpar)
-        CodigoRecuperacao.objects.filter(email=email).delete()
-        CodigoRecuperacao.objects.create(email=email, codigo=codigo)
+        uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+        token = default_token_generator.make_token(usuario)
+        link = f'{django_settings.PASSWORD_RESET_URL}#uid={uid}&token={token}'
 
         try:
-            send_mail(
-                subject='Código de Recuperação de Senha — SIGR UFSM',
+            emails_enviados = send_mail(
+                subject='Redefinição de senha — SIGR UFSM',
                 message=(
-                    f'Olá!\n\n'
-                    f'Seu código de recuperação de senha é: {codigo}\n\n'
-                    f'Este código é válido por 1 minuto. Caso não tenha solicitado a recuperação, ignore este e-mail.\n\n'
-                    f'— Equipe SIGR UFSM'
+                    f'Olá, {usuario.nome}!\n\n'
+                    f'Para redefinir sua senha, acesse o link abaixo em até '
+                    f'{django_settings.PASSWORD_RESET_TIMEOUT // 60} minutos:\n\n'
+                    f'{link}\n\n'
+                    'Se você não solicitou a recuperação, ignore este e-mail.\n\n'
+                    '— Equipe SIGR UFSM'
                 ),
                 from_email=django_settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
+                recipient_list=[usuario.email],
                 fail_silently=False,
             )
+            if emails_enviados != 1:
+                logger.error("O backend de e-mail não confirmou o envio do link de recuperação.")
         except Exception:  # pylint: disable=broad-exception-caught
-            return Response(
-                {'erro': 'Não foi possível enviar o e-mail. Tente novamente em instantes.'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            logger.exception("Falha ao enviar link de recuperação por e-mail.")
 
-        return Response({'mensagem': 'Código enviado com sucesso!'})
-
-
-class ValidarCodigoRecuperacaoView(APIView):
-    """
-    Valida se o código informado é correto e se ainda não expirou (1 minuto).
-    """
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        email = request.data.get('email')
-        codigo = request.data.get('codigo')
-
-        if not email or not codigo:
-            return Response({'erro': 'E-mail e código são obrigatórios.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            registro = CodigoRecuperacao.objects.get(email=email, codigo=codigo)
-            
-            # Verifica expiração (1 minuto)
-            agora = timezone.now()
-            if agora > registro.criado_em + timedelta(minutes=1):
-                registro.delete()
-                return Response({'erro': 'Este código expirou.'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            return Response({'mensagem': 'Código validado com sucesso!'})
-            
-        except CodigoRecuperacao.DoesNotExist:
-            return Response({'erro': 'Código inválido.'}, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response({'mensagem': MENSAGEM_SOLICITACAO_RECUPERACAO})
 
 class RedefinirSenhaView(APIView):
-    """
-    Realiza a troca de senha após a validação do código de recuperação.
-    """
+    """Redefine a senha validando um token assinado e temporário do Django."""
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
-        codigo = request.data.get('codigo')
+        uid = request.data.get('uid')
+        token = request.data.get('token')
         nova_senha = request.data.get('nova_senha')
         confirmacao = request.data.get('confirmacao_senha')
 
-        if not all([email, codigo, nova_senha, confirmacao]):
+        if not all([uid, token, nova_senha, confirmacao]) or not all(
+            isinstance(value, str) for value in (uid, token, nova_senha, confirmacao)
+        ):
             return Response({'erro': 'Todos os campos são obrigatórios.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if nova_senha != confirmacao:
             return Response({'erro': 'As senhas não coincidem.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(nova_senha) < 8:
-            return Response({'erro': 'A senha deve ter pelo menos 8 caracteres.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            usuario_id = force_str(urlsafe_base64_decode(uid))
+            usuario = Usuario.objects.get(pk=usuario_id)
+        except (TypeError, ValueError, OverflowError, UnicodeDecodeError, Usuario.DoesNotExist):
+            usuario = None
+
+        if usuario is None or not default_token_generator.check_token(usuario, token):
+            return Response(
+                {'erro': 'O link de recuperação é inválido ou expirou.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
-            # Valida o código uma última vez por segurança
-            registro = CodigoRecuperacao.objects.get(email=email, codigo=codigo)
-            
-            # Verifica expiração (1 minuto)
-            agora = timezone.now()
-            if agora > registro.criado_em + timedelta(minutes=1):
-                registro.delete()
-                return Response({'erro': 'O tempo para redefinir a senha expirou.'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Atualiza a senha do usuário
-            usuario = Usuario.objects.get(email=email)
-            usuario.set_password(nova_senha)
-            usuario.save()
-            
-            # Remove o código usado
-            registro.delete()
-            
-            return Response({'mensagem': 'Senha redefinida com sucesso!'})
-            
-        except (CodigoRecuperacao.DoesNotExist, Usuario.DoesNotExist):
-            return Response({'erro': 'Dados inválidos ou sessão expirada.'}, status=status.HTTP_400_BAD_REQUEST)
+            validate_password(nova_senha, user=usuario)
+        except ValidationError as erro:
+            return Response({'erro': erro.messages}, status=status.HTTP_400_BAD_REQUEST)
+
+        usuario.set_password(nova_senha)
+        usuario.save(update_fields=['password'])
+        Token.objects.filter(user=usuario).delete()
+
+        return Response({'mensagem': 'Senha redefinida com sucesso!'})
 
 
 class UnidadeOrganizacionalViewSet(viewsets.ModelViewSet):

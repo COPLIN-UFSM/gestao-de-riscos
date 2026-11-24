@@ -40,6 +40,15 @@ cp .env.example .env
 Para desenvolvimento local, não é preciso preencher as variáveis `DB_*`: elas só são usadas pelo perfil de produção. Se
 `SECRET_KEY` estiver vazia, o perfil local usa uma chave de desenvolvimento. Não use essa chave em produção.
 
+Para enviar e-mails de recuperação de senha, configure `EMAIL_HOST_USER` e `EMAIL_HOST_PASSWORD` no `.env` com uma
+conta SMTP válida. O exemplo usa Gmail, que exige uma senha de app; não use a senha normal da conta. O remetente padrão
+usa esse mesmo endereço autenticado. `DEFAULT_FROM_EMAIL` pode ser definido para um alias autorizado pelo provedor.
+O backend padrão é SMTP. Para testar o fluxo manualmente sem credenciais, defina temporariamente
+`EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend` no `.env`: o link será impresso no terminal do backend
+para abrir no navegador. Isso não entrega e-mail; para testar o recebimento no Gmail é necessário configurar credenciais
+SMTP válidas. Em desenvolvimento, `PASSWORD_RESET_URL` aponta para `http://localhost:5173/recuperar-senha`; ajuste-o
+se o frontend estiver rodando em outro endereço. O link expira em uma hora.
+
 ## 3. Criar e popular o banco local
 
 Com o ambiente virtual ativado, na raiz do repositório:
@@ -89,7 +98,7 @@ python manage.py runserver
 ```
 
 A API e o painel administrativo ficam disponíveis em `http://localhost:8000/` e `http://localhost:8000/admin/`. Para
-recuperação de senha local, os emails são impressos no terminal do backend.
+recuperação de senha, o backend envia o e-mail pelo SMTP configurado no `.env`.
 
 Se estiver configurando uma IDE, selecione `src.gestao_risco.settings.development` como `DJANGO_SETTINGS_MODULE`.
 
