@@ -1,3 +1,7 @@
+-- ESQUEMA LEGADO: este arquivo nao representa o modelo atual do sistema.
+-- Consulte ../banco-de-dados.md para o diagrama atual; use migrations Django
+-- para criar/atualizar bancos. O DDL de apoio DB2 fica em ../../backend/database/creation.sql.
+
 CREATE TABLE Setor (
 id SERIAL PRIMARY KEY,
 nome VARCHAR(255) NOT NULL,

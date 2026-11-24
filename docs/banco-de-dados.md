@@ -1,257 +1,150 @@
 # Banco de dados
 
-## Diagrama de classes (UML) - Mermaid
+Este documento descreve o esquema atual das entidades da aplicação, conforme os models e migrations Django. Os nomes de tabelas e colunas abaixo refletem os nomes usados pelo ORM; o tipo físico pode variar entre SQLite (desenvolvimento/testes) e DB2 (produção).
 
-Utilizando a ferramenta Mermaid para representar as principais classes persistidas no banco de dados e seus relacionamentos. Por se tratar de um diagrama UML conceitual, os atributos foram representados como privados (`-`) e os comportamentos como públicos (`+`).
+## Modelo entidade-relacionamento
 
-```mermaid
-classDiagram
-    class Setor {
-        -id: Integer
-        -nome: String
-        -sigla: String
-    }
-
-    class GerenciadorUsuario {
-        <<service>>
-        +createUser(siape: String, password: String): Usuario
-        +createSuperuser(siape: String, password: String): Usuario
-        +validarSiape(): void
-        +definirPermissoesSuperusuario(): void
-    }
-
-    class Usuario {
-        -id: Integer
-        -siape: String
-        -nome: String
-        -email: String
-        -senha: String
-        -cargo: String
-        -ativo: Boolean
-        -equipe: Boolean
-        -lastLogin: DateTime
-        -isSuperuser: Boolean
-        +isStaff(): Boolean
-        +isActive(): Boolean
-        +delete(): void
-    }
-
-    class UsuarioSetor {
-        -id: Integer
-    }
-
-    class DesafioPDI {
-        -id: Integer
-        -numero: Integer
-        -descricao: String
-        -ativo: Boolean
-        +delete(): void
-    }
-
-    class ObjetivoPDI {
-        -id: Integer
-        -codigo: String
-        -descricao: String
-        -ativo: Boolean
-        +delete(): void
-    }
-
-    class Macroprocesso {
-        -id: Integer
-        -nome: String
-        -ativo: Boolean
-        +delete(): void
-    }
-
-    class Risco {
-        -id: Integer
-        -categoria: CategoriaRisco
-        -evento: String
-        -causa: String
-        -consequencia: String
-        -controlesAtuais: String
-        -eficaciaControle: EficaciaControle
-        -probabilidade: Integer
-        -impacto: Integer
-        -nivelRisco: Integer
-        -probResidual: Integer
-        -impResidual: Integer
-        -nivelResidual: Integer
-        -ativo: Boolean
-        +calcularNivelRisco(): Integer
-        +calcularNivelResidual(): Integer
-        +delete(): void
-    }
-
-    class PlanoAcao {
-        -id: Integer
-        -tipoResposta: TipoResposta
-        -descricaoAcao: String
-        -responsavel: String
-        -parceiros: String
-        -dataInicio: Date
-        -dataFim: Date
-        -status: StatusPlanoAcao
-        -observacoes: String
-        -ativo: Boolean
-        +atualizarStatus(): void
-        +delete(): void
-    }
-
-    class Monitoramento {
-        -id: Integer
-        -dataVerificacao: Date
-        -resultados: String
-        -acoesFuturas: String
-        -analiseCritica: String
-        -ativo: Boolean
-        +registrarAnalise(): void
-        +delete(): void
-    }
-
-    class CategoriaRisco {
-        <<enumeration>>
-        Operacional
-        Estrategico
-        Integridade
-        Imagem
-        Financeiro
-    }
-
-    class EficaciaControle {
-        <<enumeration>>
-        Inexistente
-        Fraco
-        Satisfatorio
-        Forte
-    }
-
-    class TipoResposta {
-        <<enumeration>>
-        Mitigar
-        Evitar
-        Transferir
-        Aceitar
-    }
-
-    class StatusPlanoAcao {
-        <<enumeration>>
-        NaoIniciada
-        EmAndamento
-        Concluida
-        Atrasada
-    }
-
-    GerenciadorUsuario ..> Usuario : cria e gerencia
-    Usuario "1" --> "0..*" UsuarioSetor : associa
-    Setor "1" --> "0..*" UsuarioSetor : associa
-    DesafioPDI "1" --> "0..*" ObjetivoPDI : organiza
-    Setor "1" --> "0..*" Risco : possui
-    ObjetivoPDI "1" --> "0..*" Risco : referencia
-    Macroprocesso "1" --> "0..*" Risco : classifica
-    Risco "1" --> "0..*" PlanoAcao : gera
-    Risco "1" --> "0..*" Monitoramento : recebe
-    Risco --> CategoriaRisco : categoria
-    Risco --> EficaciaControle : eficaciaControle
-    PlanoAcao --> TipoResposta : tipoResposta
-    PlanoAcao --> StatusPlanoAcao : status
-
-    note for GerenciadorUsuario "Serviço de suporte à criação de usuários no Django."
-    note for Usuario "cargo: gestor (padrão) ou gestor_adm. Apenas gestor_adm pode gerenciar membros de equipe. delete() faz soft delete (ativo=False)."
-    note for UsuarioSetor "Representa a associação muitos-para-muitos entre usuário e setor."
-    note for Risco "delete() desativa o risco e propaga soft delete para PlanoAcao e Monitoramento vinculados."
-    note for PlanoAcao "Representa o tratamento do risco em formato 5W2H. delete() faz soft delete."
-    note for Monitoramento "Mantém o histórico de acompanhamento e análise do risco. delete() faz soft delete."
-```
-
-## Diagrama de casos de uso - Mermaid 
-
-Utilizando a ferramenta Mermaid para representar os principais casos de uso relacionados às funções do sistema e às tabelas persistidas. 
+`PK` indica chave primária, `FK` chave estrangeira e `UK` campo único.
 
 ```mermaid
-flowchart LR
-    gestor[Gestor]
-    gestorAdm[Gestor Administrador]
-    admin[Administrador]
+erDiagram
+    SETORES {
+        bigint id PK
+        varchar nome
+        varchar sigla
+        varchar sigla_centro
+        varchar nome_centro
+        varchar tipo_unidade
+        boolean fonte_oficial
+        boolean ativo
+    }
 
-    uc1((Autenticar no sistema))
-    uc2((Cadastrar gestor))
-    uc3((Gerenciar membros de equipe))
-    uc4((Recuperar senha))
-    uc5((Gerenciar perfil))
-    uc6((Consultar setores))
-    uc7((Cadastrar risco))
-    uc8((Editar risco))
-    uc9((Consultar planos de risco))
-    uc10((Cadastrar plano de ação))
-    uc11((Registrar monitoramento))
-    uc12((Manter estrutura PDI))
-    uc13((Desativar/Reativar gestor))
+    USUARIOS {
+        bigint id PK
+        uuid uuid UK
+        varchar siape UK
+        varchar nome
+        varchar email UK "nullable"
+        varchar password
+        datetime last_login "nullable"
+        boolean is_superuser
+        varchar cargo
+        boolean ativo
+        boolean equipe
+        datetime sem_equipe_desde "nullable"
+    }
 
-    gestor --> uc1
-    gestor --> uc4
-    gestor --> uc5
-    gestor --> uc6
-    gestor --> uc7
-    gestor --> uc8
-    gestor --> uc9
-    gestor --> uc10
-    gestor --> uc11
+    USUARIO_SETORES {
+        bigint id PK
+        bigint usuario_id FK
+        bigint setor_id FK
+    }
 
-    gestorAdm --> uc1
-    gestorAdm --> uc4
-    gestorAdm --> uc5
-    gestorAdm --> uc6
-    gestorAdm --> uc7
-    gestorAdm --> uc8
-    gestorAdm --> uc9
-    gestorAdm --> uc10
-    gestorAdm --> uc11
-    gestorAdm --> uc3
+    DESAFIOS_PDI {
+        bigint id PK
+        int numero UK
+        varchar descricao
+        boolean ativo
+    }
 
-    admin --> uc2
-    admin --> uc3
-    admin --> uc12
-    admin --> uc6
-    admin --> uc9
-    admin --> uc13
+    OBJETIVOS_PDI {
+        bigint id PK
+        varchar codigo UK
+        text descricao
+        bigint id_desafio FK
+        boolean ativo
+    }
 
-    uc1 --> db1[(USUARIOS)]
-    uc2 --> db1
-    uc3 --> db2[(USUARIO_SETORES)]
-    uc3 --> db3[(SETORES)]
-    uc4 --> db4[(CODIGOS_RECUPERACAO)]
-    uc4 --> db1
-    uc5 --> db1
-    uc5 --> db2
-    uc6 --> db3
-    uc7 --> db5[(RISCOS)]
-    uc7 --> db3
-    uc7 --> db6[(OBJETIVOS_PDI)]
-    uc7 --> db7[(MACROPROCESSOS)]
-    uc8 --> db5
-    uc9 --> db5
-    uc9 --> db8[(PLANOS_ACAO)]
-    uc9 --> db9[(MONITORAMENTOS)]
-    uc10 --> db8
-    uc11 --> db9
-    uc12 --> db10[(DESAFIOS_PDI)]
-    uc12 --> db6
-    uc12 --> db7
-    uc13 --> db1
+    MACROPROCESSOS {
+        bigint id PK
+        varchar nome UK
+        boolean ativo
+    }
+
+    RISCOS {
+        bigint id PK
+        uuid uuid UK
+        bigint id_setor FK
+        bigint id_objetivo FK
+        bigint id_macroprocesso FK
+        varchar categoria
+        text evento
+        text causa
+        text consequencia
+        text controles_atuais
+        varchar eficacia_controle
+        int probabilidade
+        int impacto
+        int nivel_risco
+        int prob_residual
+        int imp_residual
+        int nivel_residual
+        boolean ativo
+    }
+
+    PLANOS_ACAO {
+        bigint id PK
+        bigint id_risco FK
+        varchar tipo_resposta
+        text descricao_acao
+        varchar responsavel
+        text parceiros "nullable"
+        date data_inicio
+        date data_fim
+        varchar status
+        int progresso
+        text observacoes "nullable"
+        boolean ativo
+    }
+
+    HISTORICO_PLANOS {
+        bigint id PK
+        bigint id_risco FK
+        varchar usuario_nome
+        datetime data_hora
+        varchar descricao
+    }
+
+    MONITORAMENTOS {
+        bigint id PK
+        bigint id_risco FK
+        date data_verificacao
+        text resultados
+        text acoes_futuras
+        text analise_critica
+        boolean ativo
+    }
+
+    SETORES ||--o{ USUARIO_SETORES : associa
+    USUARIOS ||--o{ USUARIO_SETORES : associa
+    SETORES ||--o{ RISCOS : possui
+    DESAFIOS_PDI ||--o{ OBJETIVOS_PDI : organiza
+    OBJETIVOS_PDI ||--o{ RISCOS : referencia
+    MACROPROCESSOS ||--o{ RISCOS : classifica
+    RISCOS ||--o{ PLANOS_ACAO : recebe
+    RISCOS ||--o{ HISTORICO_PLANOS : registra
+    RISCOS ||--o{ MONITORAMENTOS : acompanha
 ```
 
-## Diagrama entidade relacionamento (ER) (Padrão ISO/Min-max) - Dbdiagram.io
+## Entidades e regras
 
-Utilizando a sintaxe do Dbdiagram.io para representar a estrutura relacional do banco com base nas tabelas atuais do projeto.
+- **Setores e usuários:** relacionamento muitos-para-muitos por `usuario_setores`; um risco pertence a um setor.
+- `setores` possui restrição única composta por `(nome, sigla_centro, tipo_unidade)`; `usuario_setores` impede duplicar o mesmo vínculo entre usuário e setor.
+- **Estrutura estratégica:** cada objetivo pertence a um desafio PDI; cada risco referencia um objetivo e um macroprocesso.
+- **Risco:** `nivel_risco` é calculado como `probabilidade × impacto`; `nivel_residual`, como `prob_residual × imp_residual`.
+- **Tratamento e acompanhamento:** um risco pode ter vários planos de ação, registros de histórico e monitoramentos. `historico_planos.usuario_nome` é texto, não uma chave estrangeira para `usuarios`.
+- **Ativação e exclusão:** `ativo` indica o estado operacional; usuários e as entidades de risco implementam exclusão lógica. Setores também podem ser desativados pela API.
+- **Recuperação de senha:** não há tabela de códigos ou tokens; o fluxo usa token temporário assinado pelo Django.
 
-![Modelo ER](images/model-banco/modelo-er.png)
+## Tabelas auxiliares do Django
+
+Além das entidades de domínio acima, o projeto usa tabelas de infraestrutura: `django_migrations`, `django_content_type`, `django_session`, `django_admin_log`, `auth_group`, `auth_permission`, `auth_group_permissions`, `usuarios_groups`, `usuarios_user_permissions` e `authtoken_token`. As tabelas `usuarios_groups`, `usuarios_user_permissions` e `auth_group_permissions` são tabelas de junção de permissões; `authtoken_token` guarda os tokens de autenticação dos usuários.
 
 ## Bancos por ambiente
 
-- **Desenvolvimento**: SQLite persistente no arquivo `dev.sqlite3`.
-- **Testes**: SQLite em memória, recriado a cada execução.
-- **Produção**: conexão com o DB2 institucional já existente; o Docker Compose não provisiona um banco.
+- **Desenvolvimento:** SQLite persistente no arquivo `dev.sqlite3`.
+- **Testes:** SQLite em memória, recriado a cada execução.
+- **Produção:** conexão com o DB2 institucional já existente; o Docker Compose não provisiona um banco.
 
 O perfil de produção exige `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` e `DB_SCHEMA`, além de `SECRET_KEY` e `ALLOWED_HOSTS`. Configure também `CORS_ALLOWED_ORIGINS` para as origens autorizadas do frontend. Esses valores devem ser fornecidos pelos administradores do ambiente e mantidos fora do repositório.
 
@@ -260,30 +153,3 @@ O perfil de produção exige `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`,
 O Django ORM cria e altera tabelas por meio das migrations versionadas em `src/usuarios/migrations/` e `src/riscos/migrations/`. Para preparar um banco vazio, execute `python manage.py migrate`; não execute `makemigrations` na inicialização/deploy, pois esse comando deve ser usado durante alterações de modelos e as novas migrations devem ser versionadas.
 
 As migrations de dados também inserem as referências iniciais: `riscos.0003_seed_pdi_inicial` carrega desafios, objetivos e macroprocessos do PDI; `usuarios.0005_popular_unidades_oficiais_ufsm` importa as unidades do CSV versionado. Para importar ou atualizar desafios e objetivos do PDI a partir dos CSVs em `backend/database/`, execute `python manage.py importar_pdi`. Os caminhos podem ser substituídos com `--arquivo-desafios` e `--arquivo-objetivos`; a importação não remove registros ausentes dos arquivos. O comando `seed_apresentacao` é separado e destrutivo para dados de usuários/riscos, portanto serve somente a bancos locais descartáveis.
-
-## Estrutura principal
-
-As entidades mais relevantes do sistema incluem:
-
-- `setores`
-  - armazena as unidades administrativas vinculadas a usuários e riscos;
-- `usuarios`
-  - representa os gestores autenticados no sistema;
-  - campo `cargo`: `gestor` (padrão) ou `gestor_adm` (pode gerenciar membros de equipe);
-  - campo `ativo`: soft delete — usuário desativado não consegue autenticar;
-- `usuario_setores`
-  - tabela intermediária para o relacionamento muitos-para-muitos entre gestores e setores;
-- `codigos_recuperacao`
-  - registra códigos temporários usados no fluxo de recuperação de senha;
-- `desafios_pdi`, `objetivos_pdi` e `macroprocessos`
-  - representam a estrutura estratégica utilizada como referência para os riscos;
-  - possuem campo `ativo` para soft delete;
-- `riscos`
-  - armazena os registros centrais do sistema e os níveis calculados;
-  - campo `ativo`: soft delete — ao desativar um risco, planos de ação e monitoramentos vinculados também são desativados em cascata;
-- `planos_acao`
-  - guarda as ações de tratamento associadas a cada risco;
-  - campo `ativo`: soft delete;
-- `monitoramentos`
-  - mantém o histórico de acompanhamento dos riscos;
-  - campo `ativo`: soft delete.
