@@ -28,6 +28,7 @@ const EditarPlano = () => {
   const [desafios, setDesafios] = useState([]);
   const [objetivos, setObjetivos] = useState([]);
   const [macroprocessos, setMacroprocessos] = useState([]);
+  const [processos, setProcessos] = useState([]);
   const [desafioSelecionado, setDesafioSelecionado] = useState('');
   
   // Step 1 & 2: Risco
@@ -35,6 +36,7 @@ const EditarPlano = () => {
     setor: '',
     objetivo: '',
     macroprocesso: '',
+    processo: '',
     categoria: 'Operacional',
     evento: '',
     causa: '',
@@ -81,6 +83,7 @@ const EditarPlano = () => {
           setor: rData.setor,
           objetivo: rData.objetivo,
           macroprocesso: rData.macroprocesso,
+          processo: rData.processo || '',
           categoria: rData.categoria,
           evento: rData.evento,
           causa: rData.causa,
@@ -127,11 +130,42 @@ const EditarPlano = () => {
     loadData();
   }, [uuid]);
 
+  useEffect(() => {
+    if (!riscoData.setor) {
+      setProcessos([]);
+      return;
+    }
+
+    api.get('/riscos/processos/', { params: { unidade: riscoData.setor } })
+      .then(response => setProcessos(response.data.results || response.data))
+      .catch(err => {
+        console.error('Erro ao carregar processos da unidade:', err);
+        showFeedback({
+          type: 'warning',
+          title: 'Processos indisponíveis',
+          message: getApiErrorMessage(err, 'processos'),
+        });
+      });
+  }, [riscoData.setor, showFeedback]);
+
   const handleRiscoChange = (e) => {
     const { name, value } = e.target;
     if (name === 'desafio') {
       setDesafioSelecionado(value);
       setRiscoData(prev => ({ ...prev, objetivo: '' }));
+      return;
+    }
+    if (name === 'setor') {
+      setRiscoData(prev => ({ ...prev, setor: value, processo: '' }));
+      return;
+    }
+    if (name === 'processo') {
+      const processo = processos.find(item => String(item.id) === value);
+      setRiscoData(prev => ({
+        ...prev,
+        processo: value,
+        ...(processo ? { macroprocesso: String(processo.macroprocesso) } : {}),
+      }));
       return;
     }
     setRiscoData(prev => ({ ...prev, [name]: value }));
@@ -196,7 +230,10 @@ const EditarPlano = () => {
     setSaving(true);
     setError('');
     try {
-      await api.patch(`/riscos/planos/${uuid}/`, riscoData);
+      await api.patch(`/riscos/planos/${uuid}/`, {
+        ...riscoData,
+        processo: riscoData.processo || null,
+      });
       showFeedback({
         type: 'success',
         title: 'Etapa atualizada',
@@ -313,7 +350,7 @@ const EditarPlano = () => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Categoria: <span className="required">*</span></label>
+                  <label>Categoria do risco: <span className="required">*</span></label>
                   <select name="categoria" value={riscoData.categoria} onChange={handleRiscoChange}>
                     <option value="Operacional">Operacional</option>
                     <option value="Estratégico">Estratégico</option>
@@ -354,13 +391,32 @@ const EditarPlano = () => {
               </div>
 
               <div className="form-group">
+                <label>Processo:</label>
+                <select name="processo" value={riscoData.processo} onChange={handleRiscoChange}>
+                  <option value="">Selecione um processo (opcional)...</option>
+                  {processos.map(processo => (
+                    <option key={processo.id} value={processo.id}>{processo.nome}</option>
+                  ))}
+                </select>
+                <button className="btn-cancel" type="button" onClick={() => navigate('/processos')}>
+                  Cadastrar processo
+                </button>
+              </div>
+
+              <div className="form-group">
                 <label>Macroprocesso: <span className="required">*</span></label>
-                <select name="macroprocesso" value={riscoData.macroprocesso} onChange={handleRiscoChange}>
-                  <option value="">Selecione um processo...</option>
+                <select
+                  name="macroprocesso"
+                  value={riscoData.macroprocesso}
+                  onChange={handleRiscoChange}
+                  disabled={Boolean(riscoData.processo)}
+                >
+                  <option value="">Selecione um macroprocesso...</option>
                   {macroprocessos.map(m => (
                     <option key={m.id} value={m.id}>{m.nome}</option>
                   ))}
                 </select>
+                {riscoData.processo && <small>Preenchido pelo processo selecionado.</small>}
               </div>
 
               <div className="form-group">

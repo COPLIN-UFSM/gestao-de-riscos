@@ -123,6 +123,13 @@ Importe-a diretamente no Postman para testar a API com exemplos prontos de corpo
 - `GET /api/riscos/macroprocessos/`
   - lista os macroprocessos vinculaveis a um risco.
 
+- `GET|POST /api/riscos/processos/`
+  - lista e cadastra processos; um processo exige categoria, macroprocesso e pelo menos uma unidade;
+  - aceita `?unidade=<id>` para listar somente processos compartilhados com a unidade.
+
+- `GET|PATCH|DELETE /api/riscos/processos/{id}/`
+  - detalha, atualiza ou desativa um processo.
+
 ---
 
 ### Planos de risco (CRUD principal)
@@ -239,6 +246,13 @@ Importe-a diretamente no Postman para testar a API com exemplos prontos de corpo
 - `GET|PATCH|DELETE /api/riscos/monitoramentos/{id}/`
   - detalha, atualiza ou desativa (soft delete) um monitoramento.
 
+- `GET|POST /api/riscos/comentarios-monitoramento/`
+  - lista e cria comentários vinculados a um monitoramento;
+  - aceita `?monitoramento=<id>` e registra automaticamente o usuário autenticado como autor.
+
+- `GET|PATCH|DELETE /api/riscos/comentarios-monitoramento/{id}/`
+  - permite consultar comentários; somente o autor pode editar ou excluir.
+
 ---
 
 ## Observacoes importantes
@@ -248,6 +262,7 @@ Importe-a diretamente no Postman para testar a API com exemplos prontos de corpo
 - adicionar e remover membros de equipe exige `cargo = gestor_adm` ou superusuario;
 - operacoes `DELETE` nos recursos de riscos sao **soft delete**: os dados permanecem no banco marcados como `ativo=False`;
 - campos `nivel_risco` e `nivel_residual` sao calculados automaticamente pelo backend no `save()` do model;
+- ao associar um processo ao risco, o macroprocesso do processo é aplicado automaticamente; durante a transição, riscos sem processo ainda exigem macroprocesso;
 - identificadores publicos (URLs, respostas da API) usam sempre `uuid` — IDs internos sequenciais nunca sao expostos ao cliente;
 - a edicao de riscos respeita o vinculo do usuario com a unidade correspondente (permissao `PertenceAoSetorDoRisco`);
 - gestores sem setor ha mais de 7 dias tem o acesso bloqueado automaticamente; o campo `sem_equipe_desde` na resposta de `/api/usuarios/me/` indica quando o bloqueio comecara.

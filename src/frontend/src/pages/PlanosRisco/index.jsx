@@ -254,6 +254,9 @@ const PlanosRisco = () => {
               </svg>
               Novo Plano
             </button>
+            <button className="export-button" onClick={() => navigate('/processos')}>
+              Processos
+            </button>
             <ThemeToggle compact />
           </div>
         </header>

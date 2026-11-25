@@ -203,6 +203,14 @@ const VisualizarPlano = () => {
                 <span>{plano.macroprocesso_detalhes?.nome}</span>
               </div>
               <div className="info-item full">
+                <label>PROCESSO</label>
+                <span>
+                  {plano.processo_detalhes
+                    ? `${plano.processo_detalhes.nome} · ${plano.processo_detalhes.categoria}`
+                    : 'Não informado (registro legado)'}
+                </span>
+              </div>
+              <div className="info-item full">
                 <label>EVENTO DE RISCO</label>
                 <div className="text-box">{plano.evento}</div>
               </div>

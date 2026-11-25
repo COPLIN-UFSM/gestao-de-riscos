@@ -12,6 +12,7 @@ import MapaRisco from './pages/MapaRisco'
 import NovoPlano from './pages/NovoPlano'
 import Perfil from './pages/Perfil'
 import PlanosRisco from './pages/PlanosRisco'
+import Processos from './pages/Processos'
 import RecuperarSenha from './pages/RecuperarSenha'
 import GestaoUsuarios from './pages/GestaoUsuarios'
 import UnidadesAdmin from './pages/UnidadesAdmin'
@@ -38,6 +39,7 @@ function App() {
               {/* Rotas autenticadas */}
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/planos" element={<ProtectedRoute><PlanosRisco /></ProtectedRoute>} />
+              <Route path="/processos" element={<ProtectedRoute><Processos /></ProtectedRoute>} />
               <Route path="/planos/:uuid" element={<ProtectedRoute><VisualizarPlano /></ProtectedRoute>} />
               <Route path="/novo-plano" element={<ProtectedRoute><NovoPlano /></ProtectedRoute>} />
               <Route path="/editar-plano/:uuid" element={<ProtectedRoute><EditarPlano /></ProtectedRoute>} />

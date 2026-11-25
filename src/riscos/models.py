@@ -59,6 +59,40 @@ class Macroprocesso(SoftDeleteModel):
         return self.nome
 
 
+class Processo(SoftDeleteModel):
+    CATEGORIAS_CHOICES = [
+        ('Operacional', 'Operacional'),
+        ('Estratégico', 'Estratégico'),
+        ('Integridade', 'Integridade'),
+        ('Imagem', 'Imagem'),
+        ('Financeiro', 'Financeiro'),
+    ]
+
+    nome = models.CharField(max_length=255, unique=True, db_column="nome")
+    categoria = models.CharField(max_length=50, choices=CATEGORIAS_CHOICES, db_column="categoria")
+    macroprocesso = models.ForeignKey(
+        Macroprocesso,
+        on_delete=models.PROTECT,
+        related_name="processos",
+        db_column="id_macroprocesso",
+    )
+    unidades = models.ManyToManyField(
+        Setor,
+        related_name="processos",
+        db_table="riscos_processos",
+        blank=True,
+    )
+
+    class Meta:
+        db_table = "processos"
+        verbose_name = "Processo"
+        verbose_name_plural = "Processos"
+        ordering = ["nome"]
+
+    def __str__(self):
+        return self.nome
+
+
 class ObjetivoPDI(SoftDeleteModel):
     codigo = models.CharField(max_length=20, unique=True, verbose_name="Código", db_column="codigo")
     descricao = models.TextField(verbose_name="Descrição", db_column="descricao")
@@ -95,6 +129,14 @@ class Risco(SoftDeleteModel):
     setor = models.ForeignKey(Setor, on_delete=models.CASCADE, related_name="riscos", db_column="id_setor")
     objetivo = models.ForeignKey(ObjetivoPDI, on_delete=models.CASCADE, related_name="riscos", db_column="id_objetivo")
     macroprocesso = models.ForeignKey(Macroprocesso, on_delete=models.CASCADE, related_name="riscos", db_column="id_macroprocesso")
+    processo = models.ForeignKey(
+        Processo,
+        on_delete=models.SET_NULL,
+        related_name="riscos",
+        db_column="id_processo",
+        null=True,
+        blank=True,
+    )
     
     categoria = models.CharField(max_length=50, choices=CATEGORIAS_CHOICES, db_column="categoria")
     evento = models.TextField(db_column="evento")
@@ -118,6 +160,8 @@ class Risco(SoftDeleteModel):
         verbose_name_plural = "Riscos"
 
     def save(self, *args, **kwargs):
+        if self.processo_id:
+            self.macroprocesso_id = self.processo.macroprocesso_id
         self.nivel_risco = self.probabilidade * self.impacto
         self.nivel_residual = self.prob_residual * self.imp_residual
         super().save(*args, **kwargs)
@@ -189,3 +233,26 @@ class Monitoramento(SoftDeleteModel):
         db_table = "monitoramentos"
         verbose_name = "Monitoramento"
         verbose_name_plural = "Monitoramentos"
+
+
+class ComentarioMonitoramento(models.Model):
+    monitoramento = models.ForeignKey(
+        Monitoramento,
+        on_delete=models.CASCADE,
+        related_name="comentarios",
+        db_column="id_monitoramento",
+    )
+    usuario = models.ForeignKey(
+        "usuarios.Usuario",
+        on_delete=models.PROTECT,
+        related_name="comentarios_monitoramento",
+        db_column="id_usuario",
+    )
+    comentario = models.TextField(db_column="comentario")
+    data_hora = models.DateTimeField(auto_now_add=True, db_column="data_hora")
+
+    class Meta:
+        db_table = "comentarios_monitoramento"
+        verbose_name = "Comentário de Monitoramento"
+        verbose_name_plural = "Comentários de Monitoramento"
+        ordering = ["data_hora", "id"]

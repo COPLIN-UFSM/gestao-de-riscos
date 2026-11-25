@@ -1,5 +1,6 @@
 import pytest
 
+from src.riscos.models import Processo
 from src.riscos.serializers import MonitoramentoSerializer, PlanoAcaoSerializer, RiscoSerializer
 
 
@@ -43,6 +44,38 @@ class TestRiscoSerializer:
 
         assert risco.nivel_risco == 10
         assert risco.nivel_residual == 3
+
+    def test_cria_risco_com_processo_sem_informar_macroprocesso(
+        self, setor_oficial, objetivo_padrao, macroprocesso_padrao
+    ):
+        processo = Processo.objects.create(
+            nome="Processo do risco",
+            categoria="Operacional",
+            macroprocesso=macroprocesso_padrao,
+        )
+        processo.unidades.add(setor_oficial)
+        serializer = RiscoSerializer(
+            data={
+                "setor": setor_oficial.id,
+                "objetivo": objetivo_padrao.id,
+                "processo": processo.id,
+                "categoria": "Operacional",
+                "evento": "Evento",
+                "causa": "Causa",
+                "consequencia": "Consequencia",
+                "controles_atuais": "Controle",
+                "eficacia_controle": "Fraco",
+                "probabilidade": 2,
+                "impacto": 3,
+                "prob_residual": 1,
+                "imp_residual": 2,
+            }
+        )
+
+        assert serializer.is_valid(), serializer.errors
+        risco = serializer.save()
+        assert risco.processo == processo
+        assert risco.macroprocesso == processo.macroprocesso
 
     def test_rejeita_categoria_invalida(self, setor_oficial, objetivo_padrao, macroprocesso_padrao):
         # o serializer deve bloquear opcoes fora das escolhas do model

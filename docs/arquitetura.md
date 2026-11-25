@@ -189,7 +189,7 @@ Elas separam a API em dois grupos:
 /api/riscos/
 ```
 
-Cada app possui seu próprio `urls.py`. No app `riscos`, o `DefaultRouter` do Django REST Framework gera rotas REST para `desafios`, `macroprocessos`, `objetivos`, `planos`, `acoes` e `monitoramentos`.
+Cada app possui seu próprio `urls.py`. No app `riscos`, o `DefaultRouter` do Django REST Framework gera rotas REST para `desafios`, `macroprocessos`, `processos`, `objetivos`, `planos`, `acoes`, `monitoramentos` e `comentarios-monitoramento`.
 
 ## Autenticação e permissões
 

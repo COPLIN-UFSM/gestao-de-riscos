@@ -13,21 +13,25 @@ from .exporters import (
     exportar_riscos_excel,
 )
 from .models import (
+    ComentarioMonitoramento,
     DesafioPDI,
     HistoricoPlano,
     Macroprocesso,
     Monitoramento,
     ObjetivoPDI,
     PlanoAcao,
+    Processo,
     Risco,
 )
 from .serializers import (
+    ComentarioMonitoramentoSerializer,
     DesafioPDISerializer,
     HistoricoPlanoSerializer,
     MacroprocessoSerializer,
     MonitoramentoSerializer,
     ObjetivoPDISerializer,
     PlanoAcaoSerializer,
+    ProcessoSerializer,
     RiscoSerializer,
 )
 
@@ -78,6 +82,7 @@ class RiscoViewSet(viewsets.ModelViewSet):
             "setor",
             "objetivo__desafio",
             "macroprocesso",
+            "processo",
         ).prefetch_related("planos_acao", "monitoramentos")
 
         setor_id = self.request.query_params.get('setor')
@@ -99,6 +104,7 @@ class RiscoViewSet(viewsets.ModelViewSet):
                 Q(causa__icontains=search) |
                 Q(consequencia__icontains=search) |
                 Q(macroprocesso__nome__icontains=search) |
+                Q(processo__nome__icontains=search) |
                 Q(objetivo__descricao__icontains=search) |
                 Q(objetivo__codigo__icontains=search) |
                 Q(
@@ -445,6 +451,24 @@ class MacroprocessoViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = None
 
+
+class ProcessoViewSet(viewsets.ModelViewSet):
+    queryset = Processo.objects.select_related("macroprocesso").prefetch_related("unidades")
+    serializer_class = ProcessoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        unidade_id = self.request.query_params.get("unidade")
+        busca = self.request.query_params.get("search")
+        if unidade_id:
+            queryset = queryset.filter(unidades__id=unidade_id)
+        if busca:
+            queryset = queryset.filter(nome__icontains=busca)
+        return queryset.distinct().order_by("nome")
+
+
 class ObjetivoPDIViewSet(viewsets.ModelViewSet):
     queryset = ObjetivoPDI.objects.all()
     serializer_class = ObjetivoPDISerializer
@@ -510,3 +534,27 @@ class MonitoramentoViewSet(viewsets.ModelViewSet):
             usuario_nome=self.request.user.nome,
             descricao="Monitoramento registrado",
         )
+
+
+class PodeGerenciarProprioComentario(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.method in permissions.SAFE_METHODS or obj.usuario_id == request.user.id
+
+
+class ComentarioMonitoramentoViewSet(viewsets.ModelViewSet):
+    queryset = ComentarioMonitoramento.objects.select_related(
+        "monitoramento", "usuario"
+    )
+    serializer_class = ComentarioMonitoramentoSerializer
+    permission_classes = [permissions.IsAuthenticated, PodeGerenciarProprioComentario]
+    pagination_class = None
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        monitoramento_id = self.request.query_params.get("monitoramento")
+        if monitoramento_id:
+            queryset = queryset.filter(monitoramento_id=monitoramento_id)
+        return queryset.order_by("data_hora", "id")
+
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)

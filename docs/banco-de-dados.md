@@ -61,12 +61,27 @@ erDiagram
         boolean ativo
     }
 
+    PROCESSOS {
+        bigint id PK
+        varchar nome UK
+        varchar categoria
+        bigint id_macroprocesso FK
+        boolean ativo
+    }
+
+    RISCOS_PROCESSOS {
+        bigint id PK
+        bigint processo_id FK
+        bigint setor_id FK
+    }
+
     RISCOS {
         bigint id PK
         uuid uuid UK
         bigint id_setor FK
         bigint id_objetivo FK
         bigint id_macroprocesso FK
+        bigint id_processo FK "nullable during transition"
         varchar categoria
         text evento
         text causa
@@ -115,9 +130,23 @@ erDiagram
         boolean ativo
     }
 
+    COMENTARIOS_MONITORAMENTO {
+        bigint id PK
+        bigint id_monitoramento FK
+        bigint id_usuario FK
+        text comentario
+        datetime data_hora
+    }
+
     SETORES ||--o{ USUARIO_SETORES : associa
     USUARIOS ||--o{ USUARIO_SETORES : associa
     SETORES ||--o{ RISCOS : possui
+    SETORES ||--o{ RISCOS_PROCESSOS : compartilha
+    PROCESSOS ||--o{ RISCOS_PROCESSOS : compartilhado
+    MACROPROCESSOS ||--o{ PROCESSOS : agrupa
+    PROCESSOS o|--o{ RISCOS : associado
+    MONITORAMENTOS ||--o{ COMENTARIOS_MONITORAMENTO : recebe
+    USUARIOS ||--o{ COMENTARIOS_MONITORAMENTO : escreve
     DESAFIOS_PDI ||--o{ OBJETIVOS_PDI : organiza
     OBJETIVOS_PDI ||--o{ RISCOS : referencia
     MACROPROCESSOS ||--o{ RISCOS : classifica

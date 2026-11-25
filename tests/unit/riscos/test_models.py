@@ -1,11 +1,13 @@
 import pytest
 
 from src.riscos.models import (
+    ComentarioMonitoramento,
     DesafioPDI,
     Macroprocesso,
     Monitoramento,
     ObjetivoPDI,
     PlanoAcao,
+    Processo,
     Risco,
 )
 from src.usuarios.models import Setor
@@ -50,6 +52,35 @@ class TestRiscoModel:
         assert str(infra_pdi['desafio']) == "999 - Desafio Teste"
         assert str(infra_pdi['macro']) == "Processo Teste Exclusivo"
         assert str(infra_pdi['objetivo']) == "OBJ-TESTE-999 - Objetivo Teste"
+
+    def test_processo_define_macroprocesso_do_risco_e_compartilha_unidade(self, infra_pdi):
+        outro_macro = Macroprocesso.objects.create(nome="Outro Macroprocesso")
+        processo = Processo.objects.create(
+            nome="Processo Compartilhado",
+            categoria="Operacional",
+            macroprocesso=infra_pdi["macro"],
+        )
+        processo.unidades.add(infra_pdi["setor"])
+
+        risco = Risco.objects.create(
+            setor=infra_pdi["setor"],
+            objetivo=infra_pdi["objetivo"],
+            macroprocesso=outro_macro,
+            processo=processo,
+            categoria="Operacional",
+            evento="Evento",
+            causa="Causa",
+            consequencia="Consequência",
+            controles_atuais="Controle",
+            eficacia_controle="Satisfatório",
+            probabilidade=2,
+            impacto=3,
+            prob_residual=1,
+            imp_residual=2,
+        )
+
+        assert risco.macroprocesso == processo.macroprocesso
+        assert list(processo.unidades.all()) == [infra_pdi["setor"]]
 
 
 @pytest.mark.django_db
@@ -107,6 +138,24 @@ class TestMonitoramentoModel:
         # a ultima verificacao confirma o relacionamento esperado
         assert monitor.risco == risco
         assert str(monitor.risco.id) in str(monitor.risco)
+
+    def test_comentario_vinculado_ao_monitoramento_e_usuario(self, risco_basico, usuario_gestor):
+        monitoramento = Monitoramento.objects.create(
+            risco=risco_basico,
+            resultados="Resultado",
+            acoes_futuras="Ações",
+            analise_critica="Análise",
+        )
+
+        comentario = ComentarioMonitoramento.objects.create(
+            monitoramento=monitoramento,
+            usuario=usuario_gestor,
+            comentario="Comentário de acompanhamento",
+        )
+
+        assert comentario.monitoramento == monitoramento
+        assert comentario.usuario == usuario_gestor
+        assert comentario.data_hora is not None
 
 
 @pytest.mark.django_db

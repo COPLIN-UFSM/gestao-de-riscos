@@ -1,4 +1,4 @@
-# Esquema de Banco de Dados: Gestao-risco-ufsm-eng-soft-1
+# Esquema de Banco de Dados: Gestao-risco-ufsm
 
 ---
 
@@ -38,16 +38,31 @@ Categorias estratégicas do Plano de Desenvolvimento Institucional.
 ---
 
 ## 4. Tabela: Macroprocesso
-Processos onde os riscos são identificados.
+Macroprocessos que agrupam processos.
 
 | Campo | Tipo          | Restrição    | Descrição                                     |
 |------|--------------|-------------|----------------------------------------------|
 | id   | SERIAL       | PRIMARY KEY | Identificador do macroprocesso               |
-| nome | VARCHAR(255) | UNIQUE      | Nome do processo                             |
+| nome | VARCHAR(255) | UNIQUE      | Nome do macroprocesso                        |
 
 ---
 
-## 5. Tabela: Objetivo_PDI
+## 5. Tabela: Processo
+Processo categorizado, obrigatoriamente vinculado a um macroprocesso.
+
+| Campo             | Tipo         | Restrição    | Descrição                        |
+|------------------|--------------|--------------|----------------------------------|
+| id               | SERIAL       | PRIMARY KEY  | Identificador único do processo  |
+| nome             | VARCHAR(255) | UNIQUE       | Nome do processo                 |
+| categoria        | VARCHAR(50)  | NOT NULL     | Categoria do processo            |
+| macroprocesso_id | INTEGER      | FOREIGN KEY  | Macroprocesso ao qual pertence   |
+
+`riscos_processos(processo_id, setor_id)` relaciona processos e unidades em uma relação N:N,
+com unicidade do par. O macroprocesso é obrigatório ao criar um processo.
+
+---
+
+## 6. Tabela: Objetivo_PDI
 Objetivos vinculados aos desafios estratégicos.
 
 | Campo       | Tipo          | Restrição    | Descrição                                     |
@@ -59,7 +74,7 @@ Objetivos vinculados aos desafios estratégicos.
 
 ---
 
-## 6. Tabela: Risco
+## 7. Tabela: Risco
 Tabela central de identificação e avaliação.
 
 | Campo              | Tipo          | Restrição     | Descrição                                     |
@@ -67,8 +82,9 @@ Tabela central de identificação e avaliação.
 | id                | SERIAL       | PRIMARY KEY  | Identificador do risco                                                          |
 | setor_id          | INTEGER      | FOREIGN KEY  | Unidade responsável                                                             |
 | objetivo_id       | INTEGER      | FOREIGN KEY  | Objetivo impactado                                                              |
-| macroprocesso_id  | INTEGER      | FOREIGN KEY  | Processo relacionado                                                            |
-| categoria         | VARCHAR(50)  | NOT NULL     | Tipo do risco (Operacional, Imagem, etc.)                                       |
+| macroprocesso_id  | INTEGER      | FOREIGN KEY  | Macroprocesso relacionado                                                       |
+| processo_id       | INTEGER      | FOREIGN KEY, NULL | Processo associado; opcional durante a transição da modelagem                |
+| categoria         | VARCHAR(50)  | NOT NULL     | Categoria legada do risco, mantida na transição                                |
 | evento            | TEXT         | NOT NULL     | Descrição do risco                                                              |
 | causa             | TEXT         | NOT NULL     | Origem do risco                                                                 |
 | consequencia      | TEXT         | NOT NULL     | Impactos potenciais                                                             |
@@ -83,7 +99,7 @@ Tabela central de identificação e avaliação.
 
 ---
 
-## 7. Tabela: Plano_Acao
+## 8. Tabela: Plano_Acao
 Ações de tratamento (5W2H).
 
 | Campo           | Tipo          | Restrição    | Descrição                                     |
@@ -101,7 +117,7 @@ Ações de tratamento (5W2H).
 
 ---
 
-## 8. Tabela: Monitoramento
+## 9. Tabela: Monitoramento
 Acompanhamento contínuo dos riscos.
 
 | Campo             | Tipo    | Restrição      | Descrição                                     |
@@ -114,3 +130,14 @@ Acompanhamento contínuo dos riscos.
 | analise_critica  | TEXT   | NOT NULL      | Sugestões de melhoria                        |
 
 ---
+
+## 10. Tabela: Comentario_Monitoramento
+Comentários independentes do plano de monitoramento, vinculados a um monitoramento e ao usuário autor.
+
+| Campo             | Tipo      | Restrição    | Descrição                            |
+|------------------|-----------|--------------|--------------------------------------|
+| id               | SERIAL    | PRIMARY KEY  | Identificador do comentário          |
+| monitoramento_id | INTEGER   | FOREIGN KEY  | Monitoramento comentado              |
+| usuario_id       | INTEGER   | FOREIGN KEY  | Usuário autor                        |
+| comentario       | TEXT      | NOT NULL     | Texto do comentário                  |
+| data_hora        | TIMESTAMP | NOT NULL     | Data e hora da criação               |
