@@ -45,8 +45,9 @@ class TestExportadores:
 
         assert planilha["A1"].value == "ID"
         assert planilha["B1"].value == "Unidade/Departamento"
-        assert planilha["Q2"].value == risco_com_plano.nivel_residual
-        assert planilha["R2"].value == "Mitigar"
+        assert planilha["G1"].value == "Processo"
+        assert planilha["R2"].value == risco_com_plano.nivel_residual
+        assert planilha["S2"].value == "Mitigar"
 
     def test_exporta_plano_individual_excel_sem_plano_acao(self, risco_basico):
         # o excel individual precisa preencher tracos quando nao ha tratamento

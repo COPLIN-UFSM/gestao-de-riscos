@@ -11,7 +11,7 @@ import './styles.css';
 
 const NovoPlano = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const safeUser = user || {};
   const [etapa, setEtapa] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -57,6 +57,43 @@ const NovoPlano = () => {
   const [riscoCriadoUuid, setRiscoCriadoUuid] = useState(null);
 
   useEffect(() => {
+    let active = true;
+
+    async function refreshUser() {
+      try {
+        const response = await api.get('/usuarios/me/');
+        if (!active) return;
+
+        const userData = response.data;
+        updateUser(userData);
+        setRiscoData(prev => {
+          const setores = userData.setores || [];
+          const setorAtualDisponivel = setores.some(
+            setor => String(setor.id) === String(prev.setor),
+          );
+          return {
+            ...prev,
+            setor: setorAtualDisponivel ? prev.setor : (setores[0]?.id || ''),
+          };
+        });
+      } catch (err) {
+        if (!active) return;
+        console.error('Erro ao atualizar dados do usuário:', err);
+        showFeedback({
+          type: 'warning',
+          title: 'Unidades podem estar desatualizadas',
+          message: getApiErrorMessage(err, 'perfil'),
+        });
+      }
+    }
+
+    refreshUser();
+    return () => {
+      active = false;
+    };
+  }, [showFeedback, updateUser]);
+
+  useEffect(() => {
     async function loadData() {
       try {
         const [desafiosRes, objRes, macroRes] = await Promise.all([
@@ -85,9 +122,13 @@ const NovoPlano = () => {
       return;
     }
 
+    let active = true;
     api.get('/riscos/processos/', { params: { unidade: riscoData.setor } })
-      .then(response => setProcessos(response.data.results || response.data))
+      .then(response => {
+        if (active) setProcessos(response.data.results || response.data);
+      })
       .catch(err => {
+        if (!active) return;
         console.error('Erro ao carregar processos da unidade:', err);
         showFeedback({
           type: 'warning',
@@ -95,6 +136,9 @@ const NovoPlano = () => {
           message: getApiErrorMessage(err, 'processos'),
         });
       });
+    return () => {
+      active = false;
+    };
   }, [riscoData.setor, showFeedback]);
 
   const handleRiscoChange = (e) => {
